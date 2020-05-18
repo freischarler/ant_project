@@ -6,11 +6,13 @@ from PyQt5.QtGui import QPixmap
 from picamera import PiCamera
 import time
 from time import sleep
-
-
-
+import datetime 
 
 class Ui_Dialog(object):
+    tiempo_finalizacion=0
+    duracion_grabacion=0
+    cantidad_videos=0
+
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(640, 391)
@@ -194,14 +196,14 @@ class Ui_Dialog(object):
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
         self.check_fullscreen.toggled.connect(self.fullscreen)
         self.pushButton.clicked.connect(self.preview_video)
-	self.duracion.valueChanged.connect(self.actualizar)
-        self.cantidad.valueChanged.connect(self.actualizar)
+        self.le_duracion.valueChanged.connect(self.actualizar)
+        self.le_cantidad.valueChanged.connect(self.actualizar)
 	
-	def grabar_datos(self):
-		archivo = open("grabacion.txt",'w')
-        	archivo.write(str(self.duracion_grabacion)+"\n")
-        	archivo.write(str(self.cantidad_videos))
-        	archivo.close()
+    def grabar_datos(self):
+        archivo = open("grabacion.txt",'w')
+        archivo.write(str(self.duracion_grabacion)+"\n")
+        archivo.write(str(self.cantidad_videos))
+        archivo.close()
         
 	#-----------------------------
 	#	PESTANIA de TIEMPO
@@ -209,9 +211,9 @@ class Ui_Dialog(object):
 	#-----------------------------
 	
     def actualizar(self):
-        f_inicio=self.inicio.text()
-        self.duracion_grabacion=self.duracion.value()
-        self.cantidad_videos=self.cantidad.value()
+        f_inicio=self.le_inicio.text()
+        self.duracion_grabacion=self.le_duracion.value()
+        self.cantidad_videos=self.le_cantidad.value()
         t_total=int(self.duracion_grabacion*self.cantidad_videos)
         
         t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:]))
@@ -224,7 +226,7 @@ class Ui_Dialog(object):
             t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:])+int(t_total))
         tiempo_finalizacion=t
 
-        self.finalizacion.setText(str(t.hour)+':'+str(t.minute))
+        self.le_finalizacion.setText(str(t.hour)+':'+str(t.minute))
         self.grabar_datos() #grabamos duracion y cantidad
 
 	#-----------------------------
