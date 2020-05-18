@@ -183,6 +183,18 @@ class Ui_Dialog(object):
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
+        self.check_fullscreen.setCheckState.connect(self.fullscrean)
+
+    def fullscrean(self):
+        if self.check_fullscreen.isEnabled:
+            self.le_wx.setEnabled(False)
+            self.le_wy.setEnabled(False)       
+            archivo = open("resolucion.txt",'w')
+            archivo.write(str("fullscrean")
+            archivo.close()
+        else:
+            self.le_wx.setEnabled(True)
+            self.le_wy.setEnabled(True)
 
 
     def mantener_cuadroX(self):
