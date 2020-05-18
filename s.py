@@ -182,12 +182,20 @@ class Ui_Dialog(object):
 
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
+        self.crop_y.valueChanged.connect(self.mantener_cuadroY)
+
 
     def mantener_cuadroX(self):
         x=self.crop_x.value()
         w=self.crop_width.value()		
         if (x+w)>1:
-            self.crop_width.setValue(1-x) 	
+            self.crop_width.setValue(1-x)
+
+    def mantener_cuadroY(self):
+        y=self.crop_y.value()
+        w=self.crop_height.value()		
+        if (y+w)>1:
+            self.crop_height.setValue(1-y)  	
 
     def preview_image(self):
         camera=PiCamera()
