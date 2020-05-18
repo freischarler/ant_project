@@ -194,6 +194,38 @@ class Ui_Dialog(object):
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
         self.check_fullscreen.toggled.connect(self.fullscreen)
         self.pushButton.clicked.connect(self.preview_video)
+	self.duracion.valueChanged.connect(self.actualizar)
+        self.cantidad.valueChanged.connect(self.actualizar)
+	
+	def grabar_datos(self):
+		archivo = open("grabacion.txt",'w')
+        	archivo.write(str(self.duracion_grabacion)+"\n")
+        	archivo.write(str(self.cantidad_videos))
+        	archivo.close()
+        
+	#-----------------------------
+	#	PESTANIA de TIEMPO
+	#   Permite configurar el inicio,fin y resolucion del video
+	#-----------------------------
+	
+    def actualizar(self):
+        f_inicio=self.inicio.text()
+        self.duracion_grabacion=self.duracion.value()
+        self.cantidad_videos=self.cantidad.value()
+        t_total=int(self.duracion_grabacion*self.cantidad_videos)
+        
+        t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:]))
+        if (int(t_total)+t.minute)>=60:
+            if(t.hour+int(int(t_total+t.minute)/60)>23):
+                 t=datetime.time(int(f_inicio[:2])+int(int(t_total+t.minute)/60)-24,int(f_inicio[3:])+int(int(t_total+t.minute)%60))
+            else:
+                t=datetime.time(int(f_inicio[:2])+int(int(t_total+t.minute)/60),int(f_inicio[3:])+int(int(t_total+t.minute)%60))
+        else:
+            t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:])+int(t_total))
+        tiempo_finalizacion=t
+
+        self.finalizacion.setText(str(t.hour)+':'+str(t.minute))
+        self.grabar_datos() #grabamos duracion y cantidad
 
 	#-----------------------------
 	#	PESTANIA de PREVIEW_VIDEO
