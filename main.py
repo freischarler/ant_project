@@ -17,6 +17,8 @@ class Ui_ConfigurarPantalla(object):
     tiempo_finalizacion=0
     duracion_grabacion=0
     cantidad_videos=0
+    
+    
 
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
@@ -256,7 +258,7 @@ class Ui_ConfigurarPantalla(object):
             archivo = open("resolucion.txt",'w')
             wx=self.le_wx.text()
             wy=self.le_wy.text()
-            archivo.write("no"+"\n"+wx+"\n"+wy)
+            archivo.write("no"+"\n"+wx+"\n"+wy+"\n"+resize)
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
         time.sleep(3)
@@ -442,6 +444,12 @@ class ConfigurarPantalla(QDialog):
 
 
 class Ui_MainWindow(QMainWindow):
+    
+    modo_fullscreen="yes"
+    windows_x=0
+    windows_y=0
+    resize=1
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
@@ -588,20 +596,48 @@ class Ui_MainWindow(QMainWindow):
         self.actionConection.triggered.connect(self.show_coneccion)
         self.actionPantalla_configuracion.triggered.connect(self.show_pantalla)
         self.actionConfigurar.triggered.connect(self.show_pantalla)
+        self.actionactionStop.triggered.connect(self.detener_grabacion)
+        self.actionGrabar.triggered.connect(self.grabar_video)
+        self.actionGuardar_configuracion.triggered.connect(self.grabar_video)
         #self.actionConfiguration.triggered.connect(self.show_config)   
         #self.actionRecord.triggered.connect(self.grabar_video)    
         #self.retranslateUi(MainWindow)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #self.actionc_on.setText("Esperando orden...")
 
+    def detener_grabacion(self):
+        camera.stop_preview()
+        camera.close()
+
     def grabar_video(self):
-        self.label_9.setText("HOLA")
         self.cargar_default()
-        cadena="Duracion [min]: "+str(self.duracion_grabacion)+" "+"Cantidad: "+str(self.cantidad_videos)
-        self.actionc_on.setText(cadena)
 
+        try:
+            if(self.modo_fullscreen=="yes"):
+                camera.start_preview(fullscreen=True)
+            else:
+                camera.start_preview(fullscreen=False, window=(self.windows_x,self.windows_y,int(640/resize),int(480/resize)))
+            self.cargar_default()
+            cadena="Duracion [min]: "+str(self.duracion_grabacion)+" "+"Cantidad: "+str(self.cantidad_videos)
+            camera.start_recording("pythonVideo.h264")
+            time.sleep(5)
+            camera.stop_preview()
+            camera.close()
+        except KeyboardInterrupt:
+            print("interrumpiendo")
+            camera.stop_preview()
+            camera.close()
 
+            
     def cargar_default(self):
+        archivoRES = open("resolucion.txt")
+        self.modo_fullscreen=archivoRES.readline()
+        if(modo_fullscreen=="no"):
+            self.windows_x=archivo.readline()
+            self.windows_y=archivo.readline()
+            self.resize=archivo.readline()
+        archivoRES.close()
+
         archivo = open("registros.txt")
         self.duracion_grabacion=archivo.readline()
         self.cantidad_videos=archivo.readline()
@@ -640,8 +676,8 @@ class Ui_MainWindow(QMainWindow):
         self.actionConexion_configuracion.setText(_translate("MainWindow", "Conectar"))
         self.actionRecord.setText(_translate("MainWindow", "Grabar"))
         self.actionactionStop.setText(_translate("MainWindow", "Parar"))
+        self.actionactionStop.setEnabled(False)
         self.actionConection.setText(_translate("MainWindow", "Conectar"))
-        #self.actionConfiguration.setText(_translate("MainWindow", "Configurar"))
         self.actionCargar_configuracion.setText(_translate("MainWindow", "Cargar configuracion"))
         self.actionConsultarBD.setText(_translate("MainWindow", "Consultar"))
         self.actionCargarBD.setText(_translate("MainWindow", "Cargar"))
