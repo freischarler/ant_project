@@ -597,7 +597,7 @@ class Ui_MainWindow(QMainWindow):
         self.actionPantalla_configuracion.triggered.connect(self.show_pantalla)
         self.actionConfigurar.triggered.connect(self.show_pantalla)
         self.actionactionStop.triggered.connect(self.detener_grabacion)
-        self.actionGrabar.triggered.connect(self.grabar_video)
+        self.actionRecord.triggered.connect(self.grabar_video)
         self.actionGuardar_configuracion.triggered.connect(self.grabar_video)
         #self.actionConfiguration.triggered.connect(self.show_config)   
         #self.actionRecord.triggered.connect(self.grabar_video)    
@@ -632,7 +632,7 @@ class Ui_MainWindow(QMainWindow):
     def cargar_default(self):
         archivoRES = open("resolucion.txt")
         self.modo_fullscreen=archivoRES.readline()
-        if(modo_fullscreen=="no"):
+        if(self.modo_fullscreen=="no"):
             self.windows_x=archivo.readline()
             self.windows_y=archivo.readline()
             self.resize=archivo.readline()
