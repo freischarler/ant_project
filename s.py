@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QHBoxLayout,
 from PyQt5.QtGui import QPixmap
 
 from picamera import PiCamera
+import time
 from time import sleep
 
 
@@ -87,12 +88,15 @@ class Ui_Dialog(object):
         self.check_fullscreen = QtWidgets.QCheckBox(self.tab_3)
         self.check_fullscreen.setGeometry(QtCore.QRect(120, 30, 161, 23))
         self.check_fullscreen.setObjectName("check_fullscreen")
+        self.check_fullscreen.setChecked(True)        
         self.le_wx = QtWidgets.QLineEdit(self.tab_3)
         self.le_wx.setGeometry(QtCore.QRect(140, 110, 113, 25))
         self.le_wx.setObjectName("le_wx")
+        self.le_wx.setEnabled(False)
         self.le_wy = QtWidgets.QLineEdit(self.tab_3)
         self.le_wy.setGeometry(QtCore.QRect(140, 140, 113, 25))
         self.le_wy.setObjectName("le_wy")
+        self.le_wy.setEnabled(False)
         self.label = QtWidgets.QLabel(self.tab_3)
         self.label.setGeometry(QtCore.QRect(120, 110, 16, 17))
         self.label.setObjectName("label")
@@ -183,18 +187,38 @@ class Ui_Dialog(object):
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
-        self.check_fullscreen.setCheckState.connect(self.fullscrean)
+        self.check_fullscreen.toggled.connect(self.fullscreen)
+        self.push_Button.clicked.connect(self.preview_video)
 
-    def fullscrean(self):
-        if self.check_fullscreen.isEnabled:
+    def preview_video(self):
+        Camera=PiCamera()
+        camera.resolution = (640,480)
+        archivo = open("resolucion.txt")
+        txt=archivo.readline()	
+        if(txt=="fullscreen"):
+            camera.start_preview(fullscreen=True)
+        else:
+            txt2:archivo.readline()
+            camera.start_preview(fullscreen=False, window=(txt,txt2,640,480)
+        time.sleep(5)
+        camera.stop_preview()
+        camera.close()
+
+    def fullscreen(self):
+        if (self.check_fullscreen.isChecked()):
             self.le_wx.setEnabled(False)
-            self.le_wy.setEnabled(False)       
+            self.le_wy.setEnabled(False)
+            self.cbox_size.setEnabled(False)        
             archivo = open("resolucion.txt",'w')
-            archivo.write(str("fullscrean")
+            archivo.write("fullscreen")
             archivo.close()
         else:
             self.le_wx.setEnabled(True)
             self.le_wy.setEnabled(True)
+            self.cbox_size.setEnabled(True)
+            archivo = open("resolucion.txt",'w')
+            archivo.write(self.le_wx.text()+"\n"+self.le_wy.text())
+            archivo.close()    
 
 
     def mantener_cuadroX(self):
