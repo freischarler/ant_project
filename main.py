@@ -401,6 +401,24 @@ class Ui_ConeccionWifi(object):
         self.buttonBox.rejected.connect(ConeccionWifi.reject)
         QtCore.QMetaObject.connectSlotsByName(ConeccionWifi)
 
+        self.pushButton_conectar.clicked.connect(self.conectar_Wifi)
+
+    def conectar_Wifi(self):
+        ssid = self.le_ssid.text()
+        passw = self.le_pwd.text()
+        try:
+            command1 = "echo 'network={' | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf"
+            command2 = "echo '        ssid=\"" + ssid + "\"' | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf"
+            command3 = "echo '        psk=\""  + passw + "\"' | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf"
+            command4 = "echo '        key_mgmt=WPA-PSK' | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf"
+            command5 = "echo '}' | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf"
+            self.lb_estadoWifi.setText("Conectado")
+            self.lb_estadoWifi.setStyleSheet("color: rgb(78, 154, 6);")
+        except:
+            self.lb_estadoWifi.setText("Desconectado")
+            self.lb_estadoWifi.setStyleSheet("color: rgb(239, 41, 41);")
+        self.lb_estadoWifi.setFont(QtGui.QFont("Ubuntu",weight=QtGui.QFont.Bold))
+
     def retranslateUi(self, ConeccionWifi):
         _translate = QtCore.QCoreApplication.translate
         ConeccionWifi.setWindowTitle(_translate("Dialog", "Configuración de Conexion"))
