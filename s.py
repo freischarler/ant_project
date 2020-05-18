@@ -185,13 +185,20 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
         
-	#CODIGO QUE NO HAY QUE REMPLAZAR
+	#-----------------------------
+	#	INICIO DE FUNCIONES
+	#-----------------------------
 
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
         self.check_fullscreen.toggled.connect(self.fullscreen)
         self.pushButton.clicked.connect(self.preview_video)
+
+	#-----------------------------
+	#	PESTANIA de PREVIEW_VIDEO
+	#   Permite acomodar el video en la pantalla o fullscreen
+	#-----------------------------
 
     def preview_video(self):
         camera=PiCamera()
@@ -228,6 +235,11 @@ class Ui_Dialog(object):
             self.le_wy.setEnabled(True)
             self.cbox_size.setEnabled(True) 
 
+	#-----------------------------
+	#	PESTANIA de Crop
+	#   Mantiene el cuadrado dentro de los limites
+	#-----------------------------
+
     def mantener_cuadroX(self):
         x=self.crop_x.value()
         w=self.crop_width.value()		
@@ -239,6 +251,11 @@ class Ui_Dialog(object):
         w=self.crop_height.value()		
         if (y+w)>1:
             self.crop_height.setValue(1-y)  	
+
+	#-----------------------------
+	#	PESTANIA de CROP
+	#   Vista previa del crop
+	#-----------------------------
 
     def preview_image(self):
         camera=PiCamera()
@@ -269,8 +286,6 @@ class Ui_Dialog(object):
         cy=self.crop_y.value()*lbh*2
         cw=self.crop_width.value()*lbw*2
         ch=self.crop_height.value()*lbh*2
-       
-
 
         self.pixmap_image.scaled(lbw,lbh)
 
@@ -281,6 +296,11 @@ class Ui_Dialog(object):
         self.lb_image.setPixmap(self.pixmap_image)
         self.lb_image.show()
         
+
+	#-----------------------------
+	#	NOMBRE DE OBJETOS
+	#-----------------------------
+
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
