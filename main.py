@@ -638,10 +638,14 @@ class Ui_MainWindow(QMainWindow):
             self.resize=archivo.readline()
         archivoRES.close()
 
-        archivo = open("registros.txt")
-        self.duracion_grabacion=archivo.readline()
-        self.cantidad_videos=archivo.readline()
-        archivo.close()
+        try:
+            archivo = open("registros.txt")
+            self.duracion_grabacion=archivo.readline()
+            self.cantidad_videos=archivo.readline()
+            archivo.close()
+        except:
+            self.duracion_grabacion=5
+            self.cantidad_videos=1
 
     def show_pantalla(self):
         dialog = ConfigurarPantalla(self)  # self hace referencia al padre
