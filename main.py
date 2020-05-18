@@ -1,13 +1,18 @@
 # Autor: Martin Omar Paz
 
 
+import picamera
+from picamera import PiCamera
+import time
+from time import sleep
+import datetime 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 #from PyQt5.QtWidgets import *
 #from PyQt5.QtCore import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QAction
-import datetime #para la fecha
+
 
 	#-----------------------------
 	#	VENTANA DE CONFIGURACION DE PANTALLA
@@ -258,7 +263,7 @@ class Ui_ConfigurarPantalla(object):
             archivo = open("resolucion.txt",'w')
             wx=self.le_wx.text()
             wy=self.le_wy.text()
-            archivo.write("no"+"\n"+wx+"\n"+wy+"\n"+resize)
+            archivo.write("no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
         time.sleep(3)
@@ -611,13 +616,13 @@ class Ui_MainWindow(QMainWindow):
 
     def grabar_video(self):
         self.cargar_default()
-
         try:
+            camera=PiCamera()
             if(self.modo_fullscreen=="yes"):
                 camera.start_preview(fullscreen=True)
             else:
-                camera.start_preview(fullscreen=False, window=(self.windows_x,self.windows_y,int(640/resize),int(480/resize)))
-            self.cargar_default()
+                camera.start_preview(fullscreen=False, window=(self.windows_x,self.windows_y,int(640/self.resize),int(480/self.resize)))
+                print(str(self.resize))
             cadena="Duracion [min]: "+str(self.duracion_grabacion)+" "+"Cantidad: "+str(self.cantidad_videos)
             camera.start_recording("pythonVideo.h264")
             time.sleep(5)
@@ -630,15 +635,14 @@ class Ui_MainWindow(QMainWindow):
 
             
     def cargar_default(self):
-        archivoRES = open("resolucion.txt")
-        self.modo_fullscreen=archivoRES.readline()
-        if(self.modo_fullscreen=="no"):
-            self.windows_x=archivo.readline()
-            self.windows_y=archivo.readline()
-            self.resize=archivo.readline()
-        archivoRES.close()
-
         try:
+            archivoRES = open("resolucion.txt")
+            self.modo_fullscreen=archivoRES.readline()
+            self.windows_x=int(archivoRES.readline())
+            self.windows_y=int(archivoRES.readline())
+            self.resize=int(archivoRES.readline())
+            archivoRES.close()
+
             archivo = open("registros.txt")
             self.duracion_grabacion=archivo.readline()
             self.cantidad_videos=archivo.readline()

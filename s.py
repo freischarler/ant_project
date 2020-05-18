@@ -198,18 +198,18 @@ class Ui_Dialog(object):
         self.pushButton.clicked.connect(self.preview_video)
         self.le_duracion.valueChanged.connect(self.actualizar)
         self.le_cantidad.valueChanged.connect(self.actualizar)
-	
-    def grabar_datos(self):
-        archivo = open("grabacion.txt",'w')
-        archivo.write(str(self.duracion_grabacion)+"\n")
-        archivo.write(str(self.cantidad_videos))
-        archivo.close()
         
 	#-----------------------------
 	#	PESTANIA de TIEMPO
 	#   Permite configurar el inicio,fin y resolucion del video
 	#-----------------------------
 	
+    def grabar_datos(self):
+        archivo = open("grabacion.txt",'w')
+        archivo.write(str(self.duracion_grabacion)+"\n")
+        archivo.write(str(self.cantidad_videos))
+        archivo.close()
+
     def actualizar(self):
         f_inicio=self.le_inicio.text()
         self.duracion_grabacion=self.le_duracion.value()
@@ -251,7 +251,7 @@ class Ui_Dialog(object):
             archivo = open("resolucion.txt",'w')
             wx=self.le_wx.text()
             wy=self.le_wy.text()
-            archivo.write("no"+"\n"+wx+"\n"+wy)
+            archivo.write("no"+"\n"+wx+"\n"+wy+str(resize))
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
         time.sleep(3)
