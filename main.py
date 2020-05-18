@@ -341,7 +341,10 @@ class Ui_ConfigurarPantalla(object):
         self.painterInstance.end()
         self.lb_image.setPixmap(self.pixmap_image)
         self.lb_image.show()
-        
+        archivo=open("crop.txt", 'w')
+        archivo.write(str(cx)+"\n"+str(cy)+"\n"+str(cw)+"\n"+str(ch))
+        #archivo.write(str(self.crop_x.value())+"\n"+str(self.crop_y.value())+"\n"+str(self.crop_width.value())+"\n"+str(self.crop_height.value()))
+        archivo.close()
 
 	#-----------------------------
 	#	NOMBRE DE OBJETOS
@@ -454,6 +457,10 @@ class Ui_MainWindow(QMainWindow):
     windows_x=0
     windows_y=0
     resize=1
+    crop_x=0
+    crop_y=0
+    crop_w=1
+    crop_h=1
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -618,6 +625,7 @@ class Ui_MainWindow(QMainWindow):
         self.cargar_default()
         try:
             camera=PiCamera()
+            camera.zoom=(self.crop_x,self.crop_y,self.crop_w,self.crop_h)
             if(self.modo_fullscreen=="yes"):
                 camera.start_preview(fullscreen=True)
             else:
@@ -647,9 +655,21 @@ class Ui_MainWindow(QMainWindow):
             self.duracion_grabacion=archivo.readline()
             self.cantidad_videos=archivo.readline()
             archivo.close()
+
+            archivo3=open("crop.txt")
+            self.crop_x=float(archivo3.readline())
+            self.crop_y=float(archivo3.readline())
+            self.crop_w=float(archivo3.readline())
+            self.crop_h=float(archivo3.readline())
+            archivo3.close()
+
         except:
             self.duracion_grabacion=5
             self.cantidad_videos=1
+            self.crop_x=0.0
+            self.crop_y=0.0
+            self.crop_w=1.0
+            self.crop_h=1.0
 
     def show_pantalla(self):
         dialog = ConfigurarPantalla(self)  # self hace referencia al padre
