@@ -1,10 +1,5 @@
-# -*- coding: utf-8 -*-
+# Autor: Martin Omar Paz
 
-# Form implementation generated from reading ui file 'main.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.0
-#
-# WARNING! All changes made in this file will be lost!
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -14,7 +9,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QAction
 import datetime #para la fecha
 
-
+	#-----------------------------
+	#	VENTANA DE CONFIGURACION DE PANTALLA
+	#-----------------------------
+	
 class Ui_ConfigurarPantalla(object):
     tiempo_finalizacion=0
     duracion_grabacion=0
