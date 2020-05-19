@@ -27,6 +27,7 @@ class Ui_ConfigurarPantalla(object):
     comprimir="no"
     resize=1
     
+    
 
     def setupUi(self, Dialog):
         
@@ -425,7 +426,8 @@ class Ui_ConfigurarPantalla(object):
         camera=PiCamera()
         #camera.start_preview()
         #sleep(0)
-        camera.resolution = (640,480)
+        camera.resolution = (self.resolucion_x,self.resolucion_y)
+        #camera.resolution = (640,480)
         camera.capture('/home/pi/Desktop/ant_project/image.jpg')
         #camera.stop_preview()
         camera.close()
@@ -571,8 +573,8 @@ class ConfigurarPantalla(QDialog):
 
 
 class Ui_MainWindow(QMainWindow):
-    
-    modo_fullscreen="yes"
+    crop_bool=0
+    modo_fullscreen=1
     windows_x=0
     windows_y=0
     resize=1
@@ -743,34 +745,48 @@ class Ui_MainWindow(QMainWindow):
         try:
             camera=PiCamera()
             #print("BANDERA"+str(self.crop_x)+str(self.crop_y)+str(self.crop_w)+str(self.crop_h))
-            regionOfInterest = (float(self.crop_x),float(self.crop_y),float(self.crop_h),float(self.crop_w))
-            (roiX, roiY, roiW, roiH) = regionOfInterest
+            if(self.crop_bool==1):
+                regionOfInterest = (float(self.crop_x),float(self.crop_y),float(self.crop_h),float(self.crop_w))
+                (roiX, roiY, roiW, roiH) = regionOfInterest
 
-            width  = self.sensorWidth*roiW                     #Desired width
-            height = self.sensorHeight*roiH                    #Desired height
+                width  = self.sensorWidth*roiW                     #Desired width
+                height = self.sensorHeight*roiH                    #Desired height
     
-            percentAspectRatio = roiW/roiH                #Ratio in percent of size 
-            imageAspectRatio   = width/height             #Desired aspect ratio
-            sensorAspectRatio  = self.sensorWidth/self.sensorHeight #Physical sensor aspect ratio       
+                percentAspectRatio = roiW/roiH                #Ratio in percent of size 
+                imageAspectRatio   = width/height             #Desired aspect ratio
+                sensorAspectRatio  = self.sensorWidth/self.sensorHeight #Physical sensor aspect ratio       
 
-    #The sensor is automatically cropped to fit current aspect ratio 
-    #so we need to adjust zoom to take that into account
-            if (imageAspectRatio > sensorAspectRatio):    
-                roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
-                roiH = roiW                              
+                #The sensor is automatically cropped to fit current aspect ratio 
+                #so we need to adjust zoom to take that into account
+                if (imageAspectRatio > sensorAspectRatio):    
+                    roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
+                    roiH = roiW                              
         
-            if (imageAspectRatio < sensorAspectRatio):   
-                roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
-                roiW = roiH 
-
-            self.actionactionStop.setEnabled(True)
-            camera.resolution=(int(width),int(height))
-            camera.zoom=(roiX,roiY,roiW,roiH)
-            camera.start_preview()
-            camera.start_recording("pythonVideo.h264")
-            time.sleep(5)
-            camera.stop_preview()
-            camera.close()
+                if (imageAspectRatio < sensorAspectRatio):   
+                    roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
+                    roiW = roiH 
+                self.actionactionStop.setEnabled(True)
+                camera.resolution=(int(width),int(height))
+                camera.zoom=(roiX,roiY,roiW,roiH)
+                camera.start_preview()
+                camera.start_recording("pythonVideo.h264")
+                time.sleep(5)
+                camera.stop_preview()
+                camera.close()
+            else:
+                if self.modo_fullscreen==0:
+                    camera.resolution = (self.windows_x,self.windows_y)
+                    camera.start_preview(fullscreen=False,window=(100,20,int(640/resize),int(480/resize)))
+                    time.sleep(5)
+                    camera.stop_preview()
+                    camera.close()
+                else:
+                    camera.resolution = (self.windows_x,self.windows_y)
+                    camera.start_preview(fullscreen=True)
+                    time.sleep(5)
+                    camera.stop_preview()
+                    camera.close()
+                    
         except KeyboardInterrupt:
             print("interrumpiendo")
             camera.stop_preview()
@@ -785,12 +801,20 @@ class Ui_MainWindow(QMainWindow):
             self.crop_h=archivo3.readline()
             self.crop_w=archivo3.readline()
             archivo3.close()
-            #print("LEE EL CROP")
+            if(self.crop_x()=="0.0" and self.crop_y()=="0.0" and self.crop_w()=="1.0" and self.crop_h()=="1.0"):
+                crop_bool=0
+            else:
+                crop_bool=1
+            #LEEMOS LOS ARCHIVOS QUE SETEAN EL VIDEO
+
             archivoRES = open("resolucion.txt")
-            self.modo_fullscreen=archivoRES.readline()
-            self.windows_x=int(archivoRES.readline())
-            self.windows_y=int(archivoRES.readline())
-            self.resize=int(archivoRES.readline())
+            txt_f=archivoRES.readline()
+            if(txt_f[0]=="y"): self.modo_fullscreen=1
+            else:
+                self.modo_fullscreen=0
+                self.windows_x=int(archivoRES.readline())
+                self.windows_y=int(archivoRES.readline())
+                self.resize=int(archivoRES.readline())                
             archivoRES.close()
 
             archivo = open("registros.txt")
