@@ -2,7 +2,7 @@
 # v.001
 
 import picamera
-from picamera import PiCamera5
+from picamera import PiCamera
 import time
 from time import sleep
 import datetime 
@@ -219,7 +219,7 @@ class Ui_ConfigurarPantalla(object):
 	#-----------------------------
 	#	INICIO DE FUNCIONES
 	#-----------------------------
-
+        self.qbox_resolucion.currentIndexChanged.connect(self.actualizar)
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
@@ -353,7 +353,7 @@ class Ui_ConfigurarPantalla(object):
 
     def preview_video(self):
         camera=PiCamera()
-        camera.resolution = (self.resolucion_x,self.resolucion_y)
+        camera.resolution = (int(self.resolucion_x),int(self.resolucion_y))
         archivo = open("resolucion.txt")
         txt=archivo.readline()
         if(self.check_fullscreen.isChecked()):
@@ -584,6 +584,8 @@ class Ui_MainWindow(QMainWindow):
     crop_h=1
     sensorWidth=640
     sensorHeight=480
+    windows_posx=0
+    windows_posy=0
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -775,13 +777,15 @@ class Ui_MainWindow(QMainWindow):
                 camera.close()
             else:
                 if self.modo_fullscreen==0:
-                    camera.resolution = (self.windows_x,self.windows_y)
-                    camera.start_preview(fullscreen=False,window=(100,20,int(640/resize),int(480/resize)))
+                    print("MODO NO-FULL-SCREEN")
+                    camera.resolution = (int(self.windows_x),int(self.windows_y))
+                    camera.start_preview(fullscreen=False,window=(self.windows_posx,self.windows_posy,int(self.windows_x/self.resize),int(self.windows_y/self.resize)))
                     time.sleep(5)
                     camera.stop_preview()
                     camera.close()
                 else:
-                    camera.resolution = (self.windows_x,self.windows_y)
+                    print("MODO FULL-SCREEN")
+                    camera.resolution = (int(self.windows_x),int(self.windows_y))
                     camera.start_preview(fullscreen=True)
                     time.sleep(5)
                     camera.stop_preview()
@@ -794,6 +798,7 @@ class Ui_MainWindow(QMainWindow):
 
             
     def cargar_default(self):
+        print("LEYENDO VALORES DE LOS TXT")
         try:
             archivo3=open("crop.txt")
             self.crop_x=archivo3.readline()
@@ -801,26 +806,37 @@ class Ui_MainWindow(QMainWindow):
             self.crop_h=archivo3.readline()
             self.crop_w=archivo3.readline()
             archivo3.close()
-            if(self.crop_x()=="0.0" and self.crop_y()=="0.0" and self.crop_w()=="1.0" and self.crop_h()=="1.0"):
-                crop_bool=0
-            else:
-                crop_bool=1
-            #LEEMOS LOS ARCHIVOS QUE SETEAN EL VIDEO
+
+            print("LECTURA CROP")
+
+            #if(self.crop_x()=="0.0" and self.crop_y()=="0.0" and self.crop_w()=="1.0" and self.crop_h()=="1.0"):
+            #    crop_bool=0
+            #else:
+            #    crop_bool=1
+
+            print("LEE RESOLUCION")
 
             archivoRES = open("resolucion.txt")
             txt_f=archivoRES.readline()
             if(txt_f[0]=="y"): self.modo_fullscreen=1
             else:
                 self.modo_fullscreen=0
-                self.windows_x=int(archivoRES.readline())
-                self.windows_y=int(archivoRES.readline())
-                self.resize=int(archivoRES.readline())                
+                self.windowsposx=int(archivoRES.readline())
+                self.windowsposy=int(archivoRES.readline())
+                self.resize=int(archivoRES.readline())
+             
             archivoRES.close()
 
-            archivo = open("registros.txt")
+            print("LEE GRABACION")
+
+            archivo = open("grabacion.txt")
             self.duracion_grabacion=archivo.readline()
             self.cantidad_videos=archivo.readline()
+            self.windows_x=archivo.readline()
+            self.windows_y=archivo.readline()
+            print("SETEO DE RESOLUCION: "+str(self.windows_x)+str(self.windows_y))
             archivo.close()
+            print("VALORES CARGADOS")
         except:
             self.duracion_grabacion=5
             self.cantidad_videos=1
