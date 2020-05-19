@@ -779,7 +779,7 @@ class Ui_MainWindow(QMainWindow):
                 if self.modo_fullscreen==0:
                     print("MODO NO-FULL-SCREEN")
                     camera.resolution = (int(self.windows_x),int(self.windows_y))
-                    camera.start_preview(fullscreen=False,window=(self.windows_posx,self.windows_posy,int(self.windows_x/self.resize),int(self.windows_y/self.resize)))
+                    camera.start_preview(fullscreen=False,window=(self.windows_posx,self.windows_posy,int(640/self.resize),int(480/self.resize)))
                     time.sleep(5)
                     camera.stop_preview()
                     camera.close()
@@ -821,8 +821,8 @@ class Ui_MainWindow(QMainWindow):
             if(txt_f[0]=="y"): self.modo_fullscreen=1
             else:
                 self.modo_fullscreen=0
-                self.windowsposx=int(archivoRES.readline())
-                self.windowsposy=int(archivoRES.readline())
+                self.windows_posx=int(archivoRES.readline())
+                self.windows_posy=int(archivoRES.readline())
                 self.resize=int(archivoRES.readline())
              
             archivoRES.close()
