@@ -1,8 +1,8 @@
 # Autor: Martin Omar Paz
 
 
-import picamera
-from picamera import PiCamera
+#import picamera
+#from picamera import PiCamera5
 import time
 from time import sleep
 import datetime 
@@ -22,10 +22,14 @@ class Ui_ConfigurarPantalla(object):
     tiempo_finalizacion=0
     duracion_grabacion=0
     cantidad_videos=0
-    
+    resolucion_x=640
+    resolucion_y=480
+    comprimir="no"
+    resize=1
     
 
     def setupUi(self, Dialog):
+        
         Dialog.setObjectName("Dialog")
         Dialog.resize(640, 391)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
@@ -90,6 +94,9 @@ class Ui_ConfigurarPantalla(object):
         self.qbox_resolucion = QtWidgets.QComboBox(self.verticalLayoutWidget)
         self.qbox_resolucion.setObjectName("qbox_resolucion")
         self.horizontalLayout_7.addWidget(self.qbox_resolucion)
+        self.checkBox_convertir = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        self.checkBox_convertir.setObjectName("checkBox_convertir")
+        self.horizontalLayout_7.addWidget(self.checkBox_convertir)
         self.verticalLayout.addLayout(self.horizontalLayout_7)
         self.tabWidget.addTab(self.tab, "")
         self.tab_3 = QtWidgets.QWidget()
@@ -102,7 +109,7 @@ class Ui_ConfigurarPantalla(object):
         self.check_fullscreen = QtWidgets.QCheckBox(self.tab_3)
         self.check_fullscreen.setGeometry(QtCore.QRect(120, 30, 161, 23))
         self.check_fullscreen.setObjectName("check_fullscreen")
-        self.check_fullscreen.setChecked(False)        
+        #self.check_fullscreen.setChecked(False)        
         self.le_wx = QtWidgets.QLineEdit(self.tab_3)
         self.le_wx.setGeometry(QtCore.QRect(140, 110, 113, 25))
         self.le_wx.setObjectName("le_wx")
@@ -123,9 +130,6 @@ class Ui_ConfigurarPantalla(object):
         self.cbox_size = QtWidgets.QComboBox(self.tab_3)
         self.cbox_size.setGeometry(QtCore.QRect(350, 110, 101, 25))
         self.cbox_size.setObjectName("cbox_size")
-        self.cbox_size.addItem("1")
-        self.cbox_size.addItem("2")
-        self.cbox_size.addItem("3")
         self.pushButton = QtWidgets.QPushButton(self.tab_3)
         self.pushButton.setGeometry(QtCore.QRect(100, 210, 89, 25))
         self.pushButton.setObjectName("pushButton")
@@ -192,12 +196,24 @@ class Ui_ConfigurarPantalla(object):
         self.line_2.setObjectName("line_2")
         self.tabWidget.addTab(self.tab_2, "")
 
+        #------------------------------------------------------
+        # AGREGADO DE RESOLUCION Y RESIZE
+        #------------------------------------------------------
+
+        self.cbox_size.addItem("1")
+        self.cbox_size.addItem("2")
+        self.cbox_size.addItem("3")
+        self.qbox_resolucion.addItem("1920x1080")
+        self.qbox_resolucion.addItem("1640x1232")
+        self.qbox_resolucion.addItem("1280x720")
+        self.qbox_resolucion.addItem("640x480")
+        
         self.retranslateUi(Dialog)
         self.tabWidget.setCurrentIndex(0)
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
-
+        self.cargar_default()
         
 	#-----------------------------
 	#	INICIO DE FUNCIONES
@@ -210,22 +226,101 @@ class Ui_ConfigurarPantalla(object):
         self.pushButton.clicked.connect(self.preview_video)
         self.le_duracion.valueChanged.connect(self.actualizar)
         self.le_cantidad.valueChanged.connect(self.actualizar)
-	
-    def grabar_datos(self):
-        archivo = open("grabacion.txt",'w')
-        archivo.write(str(self.duracion_grabacion)+"\n")
-        archivo.write(str(self.cantidad_videos))
-        archivo.close()
+        self.checkBox_convertir.toggled.connect(self.actualizar)
+        self.le_wx.textChanged.connect(self.actualizar_2)
+        self.le_wy.textChanged.connect(self.actualizar_2)
+        self.cbox_size.currentIndexChanged.connect(self.actualizar_2)
         
 	#-----------------------------
 	#	PESTANIA de TIEMPO
 	#   Permite configurar el inicio,fin y resolucion del video
 	#-----------------------------
 	
+    def cargar_default(self):
+        #CARGAMOS VALORES DE LA VENTANA DE TIEMPO
+        try:
+            archivo=open("grabacion.txt")
+            self.duracion_grabacion=archivo.readline()
+            self.cantidad_videos=archivo.readline()
+            self.resolucion_x=archivo.readline()
+            self.resolucion_y=archivo.readline()
+            self.comprimir=archivo.readline()
+            archivo.close()
+        except:
+            duracion_grabacion=5
+            cantidad_videos=1
+            resolucion_x=640
+            resolucion_y=480
+            comprimir="no"
+            archivo=open("grabacion.txt", 'w')
+            archivo.write(str(self.duracion_grabacion)+"\n") 
+            archivo.write(str(self.cantidad_videos)+"\n")
+            archivo.write(str(self.resolucion_x)+"\n")
+            archivo.write(str(self.resolucion_y)+"\n")
+            archivo.write(str(self.comprimir))
+            archivo.close()
+        if(self.comprimir[0]=="y"): 
+            self.checkBox_convertir.setChecked(True)
+        self.le_cantidad.setValue(float(self.cantidad_videos))
+        self.le_duracion.setValue(float(self.duracion_grabacion))
+
+                ######################################
+                #NO FUNCIONA BUSCAR LA RESOLUCION
+                ######################################
+
+        if(self.resolucion_x[:2]=="19"): 
+            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1920x1080"))
+
+        ######################################
+        #CARGAMOS VALORES DE LA VENTANA VISUALIZACION
+        ######################################
+
+        try:
+            archivo=open("resolucion.txt")
+            txt_f=archivo.readline()
+            if(txt_f[0]=="y"):
+                self.check_fullscreen.setChecked(True)
+                self.le_wx.setEnabled(False)
+                self.le_wy.setEnabled(False)
+                self.cbox_size.setEnabled(False)        
+                archivo.close()
+            else:
+                txt_x=archivo.readline()
+                txt_y=archivo.readline()
+                txt_s=archivo.readline()
+                self.check_fullscreen.setChecked(False)
+                self.le_wx.setText(txt_x)
+                self.le_wy.setText(txt_y)
+                #self.cbox_size PENDIENTE CAMBIAR CBOX
+                archivo.close()
+        except:
+            self.check_fullscreen.setChecked(True)
+
+
+
     def actualizar(self):
         f_inicio=self.le_inicio.text()
         self.duracion_grabacion=self.le_duracion.value()
-        self.cantidad_videos=self.le_cantidad.value()
+        self.cantidad_videos=self.le_cantidad.value()     
+        index = self.qbox_resolucion.currentIndex()
+        if(index==0): 
+            self.resolucion_x=1920 
+            self.resolucion_y=1080
+        if(index==1): 
+            self.resolucion_x=1640 
+            self.resolucion_y=1232
+        if(index==2): 
+            self.resolucion_x=1280 
+            self.resolucion_y=720
+        if(index==3): 
+            self.resolucion_x=640 
+            self.resolucion_y=480
+
+        if(self.checkBox_convertir.isChecked()):
+            self.comprimir="yes"
+        else:
+            self.comprimir="no"
+
         t_total=int(self.duracion_grabacion*self.cantidad_videos)
         
         t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:]))
@@ -241,6 +336,15 @@ class Ui_ConfigurarPantalla(object):
         self.le_finalizacion.setText(str(t.hour)+':'+str(t.minute))
         self.grabar_datos() #grabamos duracion y cantidad
 
+    def grabar_datos(self):
+        archivo = open("grabacion.txt",'w')
+        archivo.write(str(self.duracion_grabacion)+"\n")
+        archivo.write(str(self.cantidad_videos)+"\n")
+        archivo.write(str(self.resolucion_x)+"\n")
+        archivo.write(str(self.resolucion_y)+"\n")
+        archivo.write(str(self.comprimir))
+        archivo.close()
+
 	#-----------------------------
 	#	PESTANIA de PREVIEW_VIDEO
 	#   Permite acomodar el video en la pantalla o fullscreen
@@ -248,7 +352,7 @@ class Ui_ConfigurarPantalla(object):
 
     def preview_video(self):
         camera=PiCamera()
-        camera.resolution = (640,480)
+        camera.resolution = (self.resolucion_x,self.resolucion_y)
         archivo = open("resolucion.txt")
         txt=archivo.readline()
         if(self.check_fullscreen.isChecked()):
@@ -270,6 +374,15 @@ class Ui_ConfigurarPantalla(object):
         camera.stop_preview()
         camera.close()
 
+    def actualizar_2(self):
+        archivo = open("resolucion.txt",'w')
+        wx=self.le_wx.text()
+        wy=self.le_wy.text()
+        size=self.cbox_size.currentIndex()
+        print("BANDERAAAA")
+        archivo.write("no"+"\n"+wx+"\n"+wy+"\n"+str(size))
+        archivo.close()
+
 
     def fullscreen(self):
         if (self.check_fullscreen.isChecked()):
@@ -279,7 +392,12 @@ class Ui_ConfigurarPantalla(object):
         else:
             self.le_wx.setEnabled(True)
             self.le_wy.setEnabled(True)
-            self.cbox_size.setEnabled(True) 
+            self.cbox_size.setEnabled(True)
+        
+        archivo = open("resolucion.txt",'w')
+        self.resize=self.cbox_size.currentText()
+        archivo.write("yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
+        archivo.close()   
 
 	#-----------------------------
 	#	PESTANIA de Crop
@@ -360,6 +478,7 @@ class Ui_ConfigurarPantalla(object):
         self.label_6.setText(_translate("Dialog", "Finalización(hora):"))
         self.le_finalizacion.setText(_translate("Dialog", "00:00"))
         self.label_7.setText(_translate("Dialog", "Resolución"))
+        self.checkBox_convertir.setText(_translate("Dialog", "Convertir .mp4"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Tiempo"))
         self.check_fullscreen.setText(_translate("Dialog", "Fullscreen"))
         self.label.setText(_translate("Dialog", "x"))
@@ -545,10 +664,6 @@ class Ui_MainWindow(QMainWindow):
         self.actionConection = QtWidgets.QAction(QIcon("wifi.png"), "Your button", self)
         self.actionConection.setObjectName("actionConection")
         button_action = QAction(QIcon("bug.png"), "Your button", self)
-        #self.actionConfiguration = QtWidgets.QAction(MainWindow)
-        #icon = QtGui.QIcon()
-        #self.actionConfiguration.setIcon(icon)
-        #self.actionConfiguration.setObjectName("actionConfiguration")
         self.actionCargar_configuracion = QtWidgets.QAction(MainWindow)
         self.actionCargar_configuracion.setObjectName("actionCargar_configuracion")
         self.actionConsultarBD = QtWidgets.QAction(MainWindow)
