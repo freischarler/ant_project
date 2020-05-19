@@ -648,10 +648,10 @@ class Ui_MainWindow(QMainWindow):
                 roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
                 roiW = roiH 
 
+            self.actionactionStop.setEnabled(True)
             camera.resolution=(int(width),int(height))
             camera.zoom=(roiX,roiY,roiW,roiH)
             camera.start_preview()
-
             camera.start_recording("pythonVideo.h264")
             time.sleep(5)
             camera.stop_preview()
