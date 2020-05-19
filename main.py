@@ -1,8 +1,8 @@
 # Autor: Martin Omar Paz
 
 
-#import picamera
-#from picamera import PiCamera5
+import picamera
+from picamera import PiCamera5
 import time
 from time import sleep
 import datetime 
