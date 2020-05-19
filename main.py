@@ -342,8 +342,8 @@ class Ui_ConfigurarPantalla(object):
         self.lb_image.setPixmap(self.pixmap_image)
         self.lb_image.show()
         archivo=open("crop.txt", 'w')
-        archivo.write(str(cx)+"\n"+str(cy)+"\n"+str(cw)+"\n"+str(ch))
-        #archivo.write(str(self.crop_x.value())+"\n"+str(self.crop_y.value())+"\n"+str(self.crop_width.value())+"\n"+str(self.crop_height.value()))
+        #archivo.write(str(cx)+"\n"+str(cy)+"\n"+str(cw)+"\n"+str(ch))
+        archivo.write(str(self.crop_x.value())+"\n"+str(self.crop_y.value())+"\n"+str(self.crop_width.value())+"\n"+str(self.crop_height.value()))
         archivo.close()
 
 	#-----------------------------
@@ -461,6 +461,8 @@ class Ui_MainWindow(QMainWindow):
     crop_y=0
     crop_w=1
     crop_h=1
+    sensorWidth=640
+    sensorHeight=480
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -625,13 +627,31 @@ class Ui_MainWindow(QMainWindow):
         self.cargar_default()
         try:
             camera=PiCamera()
-            camera.zoom=(self.crop_x,self.crop_y,self.crop_w,self.crop_h)
-            if(self.modo_fullscreen=="yes"):
-                camera.start_preview(fullscreen=True)
-            else:
-                camera.start_preview(fullscreen=False, window=(self.windows_x,self.windows_y,int(640/self.resize),int(480/self.resize)))
-                print(str(self.resize))
-            cadena="Duracion [min]: "+str(self.duracion_grabacion)+" "+"Cantidad: "+str(self.cantidad_videos)
+            #print("BANDERA"+str(self.crop_x)+str(self.crop_y)+str(self.crop_w)+str(self.crop_h))
+            regionOfInterest = (float(self.crop_x),float(self.crop_y),float(self.crop_h),float(self.crop_w))
+            (roiX, roiY, roiW, roiH) = regionOfInterest
+
+            width  = self.sensorWidth*roiW                     #Desired width
+            height = self.sensorHeight*roiH                    #Desired height
+    
+            percentAspectRatio = roiW/roiH                #Ratio in percent of size 
+            imageAspectRatio   = width/height             #Desired aspect ratio
+            sensorAspectRatio  = self.sensorWidth/self.sensorHeight #Physical sensor aspect ratio       
+
+    #The sensor is automatically cropped to fit current aspect ratio 
+    #so we need to adjust zoom to take that into account
+            if (imageAspectRatio > sensorAspectRatio):    
+                roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
+                roiH = roiW                              
+        
+            if (imageAspectRatio < sensorAspectRatio):   
+                roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
+                roiW = roiH 
+
+            camera.resolution=(int(width),int(height))
+            camera.zoom=(roiX,roiY,roiW,roiH)
+            camera.start_preview()
+
             camera.start_recording("pythonVideo.h264")
             time.sleep(5)
             camera.stop_preview()
@@ -644,6 +664,13 @@ class Ui_MainWindow(QMainWindow):
             
     def cargar_default(self):
         try:
+            archivo3=open("crop.txt")
+            self.crop_x=archivo3.readline()
+            self.crop_y=archivo3.readline()
+            self.crop_h=archivo3.readline()
+            self.crop_w=archivo3.readline()
+            archivo3.close()
+            #print("LEE EL CROP")
             archivoRES = open("resolucion.txt")
             self.modo_fullscreen=archivoRES.readline()
             self.windows_x=int(archivoRES.readline())
@@ -655,21 +682,10 @@ class Ui_MainWindow(QMainWindow):
             self.duracion_grabacion=archivo.readline()
             self.cantidad_videos=archivo.readline()
             archivo.close()
-
-            archivo3=open("crop.txt")
-            self.crop_x=float(archivo3.readline())
-            self.crop_y=float(archivo3.readline())
-            self.crop_w=float(archivo3.readline())
-            self.crop_h=float(archivo3.readline())
-            archivo3.close()
-
         except:
             self.duracion_grabacion=5
             self.cantidad_videos=1
-            self.crop_x=0.0
-            self.crop_y=0.0
-            self.crop_w=1.0
-            self.crop_h=1.0
+
 
     def show_pantalla(self):
         dialog = ConfigurarPantalla(self)  # self hace referencia al padre

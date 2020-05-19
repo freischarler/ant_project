@@ -10,9 +10,9 @@ from time import sleep
 sensorWidth=640
 sensorHeight=480
 tiempo_grabado=5
-x=y=0
+x=y=0.5
 w=h=1.0
-#x=0.55
+#x=0.0
 #y=0.65
 #w=0.1
 #h=0.1
