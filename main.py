@@ -296,6 +296,7 @@ class Ui_ConfigurarPantalla(object):
                 archivo.close()
         except:
             self.check_fullscreen.setChecked(True)
+            archivo.close()
 
 
 
