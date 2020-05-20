@@ -1,8 +1,8 @@
 # Autor: Martin Omar Paz
 # v.001
 
-#import picamera
-#from picamera import PiCamera
+import picamera
+from picamera import PiCamera
 import time
 from time import sleep
 import datetime 
@@ -113,11 +113,13 @@ class Ui_ConfigurarPantalla(object):
         #self.check_fullscreen.setChecked(False)   
         self.le_wx = QtWidgets.QDoubleSpinBox(self.tab_3)
         self.le_wx.setDecimals(0)
+        self.le_wx.setMaximum(1920)
         self.le_wx.setGeometry(QtCore.QRect(140, 110, 113, 25))
         self.le_wx.setObjectName("le_wx")
         #self.le_wx.setEnabled(True)
         self.le_wy = QtWidgets.QDoubleSpinBox(self.tab_3)
         self.le_wy.setDecimals(0)
+        self.le_wy.setMaximum(1080)
         self.le_wy.setGeometry(QtCore.QRect(140, 140, 113, 25))
         self.le_wy.setObjectName("le_wy")
         #self.le_wy.setEnabled(True)
@@ -206,7 +208,7 @@ class Ui_ConfigurarPantalla(object):
         self.cbox_size.addItem("1")
         self.cbox_size.addItem("2")
         self.cbox_size.addItem("3")
-        self.qbox_resolucion.addItem("default")
+        #self.qbox_resolucion.addItem("default")
         self.qbox_resolucion.addItem("1920x1080")
         self.qbox_resolucion.addItem("1640x1232")
         self.qbox_resolucion.addItem("1280x720")
@@ -231,8 +233,8 @@ class Ui_ConfigurarPantalla(object):
         self.le_duracion.valueChanged.connect(self.actualizar)
         self.le_cantidad.valueChanged.connect(self.actualizar)
         self.checkBox_convertir.toggled.connect(self.actualizar)
-        self.le_wx.textChanged.connect(self.actualizar_2)
-        self.le_wy.textChanged.connect(self.actualizar_2)
+        self.le_wx.valueChanged.connect(self.actualizar_2)
+        self.le_wy.valueChanged.connect(self.actualizar_2)
         self.cbox_size.currentIndexChanged.connect(self.actualizar_2)
         
 	#-----------------------------
@@ -269,12 +271,18 @@ class Ui_ConfigurarPantalla(object):
         self.le_duracion.setValue(float(self.duracion_grabacion))
 
                 ######################################
-                #NO FUNCIONA BUSCAR LA RESOLUCION
+                #CARGA RESOLUCION
                 ######################################
 
         if(self.resolucion_x[:2]=="19"): 
             self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1920x1080"))
 
+        if(self.resolucion_x[:2]=="16"): 
+            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1640x1232"))
+        if(self.resolucion_x[:2]=="12"): 
+            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1280x720"))
+        if(self.resolucion_x[:2]=="64"): 
+            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("640x480"))
         ######################################
         #CARGAMOS VALORES DE LA VENTANA VISUALIZACION
         ######################################
@@ -289,16 +297,25 @@ class Ui_ConfigurarPantalla(object):
                 self.cbox_size.setEnabled(False)        
                 archivo.close()
             else:
-                txt_x=archivo.readline()
-                txt_y=archivo.readline()
-                txt_s=archivo.readline()
+                txt_x=archivo.readline().replace('\n', '')
+                txt_y=archivo.readline().replace('\n', '')
+                txt_s=archivo.readline().replace('\n', '')
                 self.check_fullscreen.setChecked(False)
-                self.le_wx.setText(txt_x)
-                self.le_wy.setText(txt_y)
-                #self.cbox_size PENDIENTE CAMBIAR CBOX
+                self.le_wx.setValue(float(txt_x))
+                self.le_wy.setValue(float(txt_y))
+                if(txt_s=="1"): 
+                    self.cbox_size.setCurrentIndex(self.cbox_size.findText("1"))
+
+                if(txt_s=="2"): 
+                    self.cbox_size.setCurrentIndex(self.cbox_size.findText("2"))
+                if(txt_s=="3"): 
+                    self.cbox_size.setCurrentIndex(self.cbox_size.findText("3"))
                 archivo.close()
         except:
             self.check_fullscreen.setChecked(True)
+            self.le_wx.setEnabled(False)
+            self.le_wy.setEnabled(False)
+            self.cbox_size.setEnabled(False) 
             archivo.close()
 
 
@@ -308,16 +325,16 @@ class Ui_ConfigurarPantalla(object):
         self.duracion_grabacion=self.le_duracion.value()
         self.cantidad_videos=self.le_cantidad.value()     
         index = self.qbox_resolucion.currentIndex()
-        if(index==1): 
+        if(index==0): 
             self.resolucion_x=1920 
             self.resolucion_y=1080
-        if(index==2): 
+        if(index==1): 
             self.resolucion_x=1640 
             self.resolucion_y=1232
-        if(index==3): 
+        if(index==2): 
             self.resolucion_x=1280 
             self.resolucion_y=720
-        if(index==4): 
+        if(index==3): 
             self.resolucion_x=640 
             self.resolucion_y=480
 
