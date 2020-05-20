@@ -1,8 +1,8 @@
 # Autor: Martin Omar Paz
 # v.001
 
-import picamera
-from picamera import PiCamera
+#import picamera
+#from picamera import PiCamera
 import time
 from time import sleep
 import datetime 
@@ -110,15 +110,17 @@ class Ui_ConfigurarPantalla(object):
         self.check_fullscreen = QtWidgets.QCheckBox(self.tab_3)
         self.check_fullscreen.setGeometry(QtCore.QRect(120, 30, 161, 23))
         self.check_fullscreen.setObjectName("check_fullscreen")
-        #self.check_fullscreen.setChecked(False)        
-        self.le_wx = QtWidgets.QLineEdit(self.tab_3)
+        #self.check_fullscreen.setChecked(False)   
+        self.le_wx = QtWidgets.QDoubleSpinBox(self.tab_3)
+        self.le_wx.setDecimals(0)
         self.le_wx.setGeometry(QtCore.QRect(140, 110, 113, 25))
         self.le_wx.setObjectName("le_wx")
-        self.le_wx.setEnabled(True)
-        self.le_wy = QtWidgets.QLineEdit(self.tab_3)
+        #self.le_wx.setEnabled(True)
+        self.le_wy = QtWidgets.QDoubleSpinBox(self.tab_3)
+        self.le_wy.setDecimals(0)
         self.le_wy.setGeometry(QtCore.QRect(140, 140, 113, 25))
         self.le_wy.setObjectName("le_wy")
-        self.le_wy.setEnabled(True)
+        #self.le_wy.setEnabled(True)
         self.label = QtWidgets.QLabel(self.tab_3)
         self.label.setGeometry(QtCore.QRect(120, 110, 16, 17))
         self.label.setObjectName("label")
@@ -204,6 +206,7 @@ class Ui_ConfigurarPantalla(object):
         self.cbox_size.addItem("1")
         self.cbox_size.addItem("2")
         self.cbox_size.addItem("3")
+        self.qbox_resolucion.addItem("default")
         self.qbox_resolucion.addItem("1920x1080")
         self.qbox_resolucion.addItem("1640x1232")
         self.qbox_resolucion.addItem("1280x720")
@@ -305,16 +308,16 @@ class Ui_ConfigurarPantalla(object):
         self.duracion_grabacion=self.le_duracion.value()
         self.cantidad_videos=self.le_cantidad.value()     
         index = self.qbox_resolucion.currentIndex()
-        if(index==0): 
+        if(index==1): 
             self.resolucion_x=1920 
             self.resolucion_y=1080
-        if(index==1): 
+        if(index==2): 
             self.resolucion_x=1640 
             self.resolucion_y=1232
-        if(index==2): 
+        if(index==3): 
             self.resolucion_x=1280 
             self.resolucion_y=720
-        if(index==3): 
+        if(index==4): 
             self.resolucion_x=640 
             self.resolucion_y=480
 
