@@ -444,10 +444,7 @@ class Ui_ConfigurarPantalla(object):
 
     def preview_image(self):
         camera=PiCamera()
-        #camera.start_preview()
-        #sleep(0)
-        camera.resolution = (self.resolucion_x,self.resolucion_y)
-        #camera.resolution = (640,480)
+        camera.resolution = (int(self.resolucion_x),int(self.resolucion_y))
         camera.capture('/home/pi/Desktop/ant_project/image.jpg')
         #camera.stop_preview()
         camera.close()
@@ -468,10 +465,15 @@ class Ui_ConfigurarPantalla(object):
         lbh=self.lb_image.height()
         
 		# draw rectangle on painter
-        cx=self.crop_x.value()*lbw*2
-        cy=self.crop_y.value()*lbh*2
-        cw=self.crop_width.value()*lbw*2
-        ch=self.crop_height.value()*lbh*2
+        k1=k2=2
+        if(int(self.resolucion_x)==1920): 
+            k1=6
+            k2=4.5
+            print("CROP 1920")
+        cx=self.crop_x.value()*lbw*k1
+        cy=self.crop_y.value()*lbh*k2
+        cw=self.crop_width.value()*lbw*k1
+        ch=self.crop_height.value()*lbh*k2
 
         self.pixmap_image.scaled(lbw,lbh)
 
@@ -602,8 +604,6 @@ class Ui_MainWindow(QMainWindow):
     crop_y=0
     crop_w=1
     crop_h=1
-    sensorWidth=640
-    sensorHeight=480
     windows_posx=0
     windows_posy=0
 
@@ -764,22 +764,25 @@ class Ui_MainWindow(QMainWindow):
 
     def grabar_video(self):
         self.cargar_default()
+        print(str(self.crop_bool))
         try:
             camera=PiCamera()
-            #print("BANDERA"+str(self.crop_x)+str(self.crop_y)+str(self.crop_w)+str(self.crop_h))
+            #print("CROP BOOL RECIBIDO"+str(self.crop_bool))
             if(self.crop_bool==1):
-                regionOfInterest = (float(self.crop_x),float(self.crop_y),float(self.crop_h),float(self.crop_w))
+                print(str(self.crop_x)+str(self.crop_y)+str(self.crop_w)+str(self.crop_h))
+                regionOfInterest = (float(self.crop_x),float(self.crop_y),float(self.crop_w),float(self.crop_h))
                 (roiX, roiY, roiW, roiH) = regionOfInterest
-
-                width  = self.sensorWidth*roiW                     #Desired width
-                height = self.sensorHeight*roiH                    #Desired height
-    
+                
+                width  = int(self.windows_x)*roiW                     #Desired width
+                height = int(self.windows_y)*roiH                    #Desired height
+                
                 percentAspectRatio = roiW/roiH                #Ratio in percent of size 
                 imageAspectRatio   = width/height             #Desired aspect ratio
-                sensorAspectRatio  = self.sensorWidth/self.sensorHeight #Physical sensor aspect ratio       
+                sensorAspectRatio  = int(self.windows_x)/int(self.windows_y) #Physical sensor aspect ratio       
 
                 #The sensor is automatically cropped to fit current aspect ratio 
                 #so we need to adjust zoom to take that into account
+                #print("BANDERA"+str(roiX)+str(roiY))
                 if (imageAspectRatio > sensorAspectRatio):    
                     roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
                     roiH = roiW                              
@@ -788,10 +791,11 @@ class Ui_MainWindow(QMainWindow):
                     roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
                     roiW = roiH 
                 self.actionactionStop.setEnabled(True)
-                camera.resolution=(int(width),int(height))
+                camera.resolution=(int(self.windows_x),int(self.windows_y))
+                
                 camera.zoom=(roiX,roiY,roiW,roiH)
                 camera.start_preview()
-                camera.start_recording("pythonVideo.h264")
+                #camera.start_recording("pythonVideo.h264")
                 time.sleep(5)
                 camera.stop_preview()
                 camera.close()
@@ -819,23 +823,26 @@ class Ui_MainWindow(QMainWindow):
             
     def cargar_default(self):
         print("LEYENDO VALORES DE LOS TXT")
+        
         try:
             archivo3=open("crop.txt")
-            self.crop_x=archivo3.readline()
-            self.crop_y=archivo3.readline()
-            self.crop_h=archivo3.readline()
-            self.crop_w=archivo3.readline()
-            archivo3.close()
-
+            self.crop_x=float(archivo3.readline().replace('\n', ''))
+            self.crop_y=float(archivo3.readline().replace('\n', ''))
+            self.crop_w=float(archivo3.readline().replace('\n', ''))
+            self.crop_h=float(archivo3.readline().replace('\n', ''))
             print("LECTURA CROP")
+            
+            if(str(self.crop_x)=="0.0" and str(self.crop_y)=="0.0" and str(self.crop_h)=="1.0" and str(self.crop_w)=="1.0"):
+                self.crop_bool=0
+            else:
+                self.crop_bool=1
+            print("VALOR BOOL CROP: "+str(crop_bool))
 
-            #if(self.crop_x()=="0.0" and self.crop_y()=="0.0" and self.crop_w()=="1.0" and self.crop_h()=="1.0"):
-            #    crop_bool=0
-            #else:
-            #    crop_bool=1
+        except:
+            print("problema lectura crop")
 
+        try:
             print("LEE RESOLUCION")
-
             archivoRES = open("resolucion.txt")
             txt_f=archivoRES.readline()
             if(txt_f[0]=="y"): self.modo_fullscreen=1

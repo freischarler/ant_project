@@ -9,11 +9,13 @@ from time import sleep
 #sudo apt-get install gpac
 sensorWidth=640
 sensorHeight=480
+#sensorWidth=1920
+#sensorHeight=1080
 tiempo_grabado=5
 x=y=0.5
-w=h=1.0
-#x=0.0
-#y=0.65
+w=h=0.5
+#x=y=0.5
+#y=0.5
 #w=0.1
 #h=0.1
 
