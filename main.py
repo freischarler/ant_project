@@ -469,7 +469,13 @@ class Ui_ConfigurarPantalla(object):
         if(int(self.resolucion_x)==1920): 
             k1=6
             k2=4.5
-            print("CROP 1920")
+        if(int(self.resolucion_x)==1640): 
+            k1=5.12
+            k2=5.13
+        if(int(self.resolucion_x)==1280): 
+            k1=4
+            k2=3
+  
         cx=self.crop_x.value()*lbw*k1
         cy=self.crop_y.value()*lbh*k2
         cw=self.crop_width.value()*lbw*k1
