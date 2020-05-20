@@ -378,11 +378,10 @@ class Ui_ConfigurarPantalla(object):
 
     def actualizar_2(self):
         archivo = open("resolucion.txt",'w')
-        wx=self.le_wx.text()
-        wy=self.le_wy.text()
-        size=self.cbox_size.currentIndex()
-        print("BANDERAAAA")
-        archivo.write("no"+"\n"+wx+"\n"+wy+"\n"+str(size))
+        wx=self.le_wx.text().replace('\n', ' ')
+        wy=self.le_wy.text().replace('\n', ' ')
+        size=str(self.cbox_size.currentIndex())
+        archivo.write("no"+"\n"+wx+"\n"+wy+size)
         archivo.close()
 
 
@@ -778,14 +777,14 @@ class Ui_MainWindow(QMainWindow):
                 camera.close()
             else:
                 if self.modo_fullscreen==0:
-                    print("MODO NO-FULL-SCREEN")
+                    print("MODO NO-FULL-SCREEN: "+str(self.windows_x)+" "+str(self.windows_y))
                     camera.resolution = (int(self.windows_x),int(self.windows_y))
                     camera.start_preview(fullscreen=False,window=(self.windows_posx,self.windows_posy,int(640/self.resize),int(480/self.resize)))
                     time.sleep(5)
                     camera.stop_preview()
                     camera.close()
                 else:
-                    print("MODO FULL-SCREEN")
+                    print("MODO FULL-SCREEN: "+str(self.windows_x)+" "+str(self.windows_y))
                     camera.resolution = (int(self.windows_x),int(self.windows_y))
                     camera.start_preview(fullscreen=True)
                     time.sleep(5)
@@ -835,7 +834,7 @@ class Ui_MainWindow(QMainWindow):
             self.cantidad_videos=archivo.readline()
             self.windows_x=archivo.readline()
             self.windows_y=archivo.readline()
-            print("SETEO DE RESOLUCION: "+str(self.windows_x)+str(self.windows_y))
+            print("SETEO DE RESOLUCION: "+self.windows_x+self.windows_y)
             archivo.close()
             print("VALORES CARGADOS")
         except:
