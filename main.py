@@ -770,7 +770,7 @@ class Ui_MainWindow(QMainWindow):
 
     def grabar_video(self):
         self.cargar_default()
-        print(str(self.crop_bool))
+        #print(str(self.crop_bool))
         try:
             camera=PiCamera()
             #print("CROP BOOL RECIBIDO"+str(self.crop_bool))
