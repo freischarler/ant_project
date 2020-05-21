@@ -1,5 +1,6 @@
 
-        self.cargar_default()
+
+self.cargar_default()
         #print(str(self.crop_bool))
         try:
             camera=PiCamera()
@@ -18,7 +19,6 @@
 
                 #The sensor is automatically cropped to fit current aspect ratio 
                 #so we need to adjust zoom to take that into account
-                #print("BANDERA"+str(roiX)+str(roiY))
                 if (imageAspectRatio > sensorAspectRatio):    
                     roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
                     roiH = roiW                              
@@ -57,7 +57,7 @@
             camera.close()
 
             
-    def cargar_default(self):
+def cargar_default(self):
         print("LEYENDO VALORES DE LOS TXT")
         
         try:
