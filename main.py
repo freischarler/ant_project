@@ -1,5 +1,10 @@
 # Autor: Martin Omar Paz
 # v.001
+import sys
+import os
+
+import subprocess
+from subprocess import Popen, PIPE
 
 import picamera
 from picamera import PiCamera
@@ -769,12 +774,18 @@ class Ui_MainWindow(QMainWindow):
         camera.close()
 
     def grabar_video(self):
+        self.actionactionStop.setEnabled(True)
+        sleep(1)
         try:
-            p=subprocess.Popen(args=["python3", "video.py"],
+             
+             p=subprocess.Popen(args=["python3", "video.py"],
                            stdout=subprocess.PIPE,
                            stdin=subprocess.PIPE)
+             stdout, stderr=p.communicate()
+             print(stdout)
         except:
-            print("FALLO AL INTENTAR GRABAR")
+             print("CANCELADO")
+
 
 
     def show_pantalla(self):

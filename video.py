@@ -1,3 +1,12 @@
+import os
+import sys
+
+import picamera
+from picamera import PiCamera
+import time
+#from time import sleep
+import datetime 
+
 
 class Video():
     crop_bool=0
@@ -13,7 +22,7 @@ class Video():
     windows_posy=0
 
 
-    def cargar_default():
+    def cargar_default(self):
         print("LEYENDO VALORES DE LOS TXT")
         try:
             archivo3=open("crop.txt")
@@ -61,7 +70,7 @@ class Video():
     
 def main():
     newVideo= Video()
-    newVideo.cargar_default
+    newVideo.cargar_default()
 
     try:
         camera=PiCamera()
@@ -88,13 +97,13 @@ def main():
                 roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
                 roiW = roiH 
             
-            newVideo.actionactionStop.setEnabled(True)
             camera.resolution=(int(newVideo.windows_x),int(newVideo.windows_y))
                     
             camera.zoom=(roiX,roiY,roiW,roiH)
             camera.start_preview()
-                    #camera.start_recording("pythonVideo.h264")
-            time.sleep(5)
+            camera.start_recording("pythonVideo.h264")
+            #time.sleep(1)
+            camera.wait_recording(10)
             camera.stop_preview()
             camera.close()                
         else:
@@ -102,20 +111,25 @@ def main():
                 print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                 camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                 camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(640/newVideo.resize),int(480/newVideo.resize)))
-                time.sleep(5)
+                camera.start_recording("pythonVideo.h264")
+                #time.sleep(1)
+                camera.wait_recording(10)
                 camera.stop_preview()
                 camera.close()        
             else:
                 print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                 camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                 camera.start_preview(fullscreen=True)
-                time.sleep(5)
+                camera.start_recording("pythonVideo.h264")
+                #time.sleep(1)
+                camera.wait_recording(10)
                 camera.stop_preview()
                 camera.close()        
                         
     except KeyboardInterrupt:
-                print("interrumpiendo")
+                print("terminando antes")
                 camera.stop_preview()
+                camera.stop_recording()
                 camera.close()                
 
 if __name__ == "__main__":
