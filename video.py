@@ -69,6 +69,8 @@ class Video():
             self.cantidad_videos=1    
     
 def main():
+    t_preview=2
+    t_record=5
     newVideo= Video()
     newVideo.cargar_default()
 
@@ -103,8 +105,11 @@ def main():
             camera.start_preview()
             camera.start_recording("pythonVideo.h264")
             #time.sleep(1)
-            camera.wait_recording(10)
+            camera.wait_recording(t_preview)
+			
             camera.stop_preview()
+            camera.wait_recording(t_record)
+            camera.stop_recording()
             camera.close()                
         else:
             if newVideo.modo_fullscreen==0:
