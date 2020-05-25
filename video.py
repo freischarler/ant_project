@@ -2,6 +2,7 @@ import os
 import sys
 from glob import glob
 from subprocess import check_output, CalledProcessError
+#asd
 
 import picamera
 from picamera import PiCamera
