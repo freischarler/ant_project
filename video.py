@@ -41,14 +41,12 @@ class Video():
             self.windows_y=archivo.readline()
             print("SETEO DE RESOLUCION: "+self.windows_x+self.windows_y)
             archivo.close()
-            print("VALORES CARGADOS")
         except:
             print("ERROR AL LEER GRABACION.txt")
             self.duracion_grabacion=5
             self.cantidad_videos=1    
 
         try:
-            print("LEE RESOLUCION")
             archivoRES = open("resolucion.txt")
             txt_f=archivoRES.readline()
             if(txt_f[0]=="y"): self.modo_fullscreen=1
@@ -67,18 +65,17 @@ class Video():
             self.crop_y=float(archivo3.readline().replace('\n', ''))
             self.crop_w=float(archivo3.readline().replace('\n', ''))
             self.crop_h=float(archivo3.readline().replace('\n', ''))
-            print("LECTURA CROP")
+
             
-            if(str(self.crop_x)=="0.0" and str(self.crop_y)=="0.0" and str(self.crop_h)=="1.0" and str(self.crop_w)=="1.0"):
+            if(self.crop_x==0.0 and self.crop_y==0.0 and self.crop_h==1.0 and self.crop_w==1.0):
                 self.crop_bool=0
             else:
                 self.crop_bool=1
-            print("VALOR BOOL CROP: "+str(crop_bool))
+            print("VALOR BOOL CROP: "+str(self.crop_bool))
 
         except:
             print("problema lectura crop")
             self.crop_bool=0
-
 
         try:
             archi_acum=open("num.txt")
@@ -130,7 +127,7 @@ def main():
     
     newVideo= Video()
     newVideo.cargar_default()
-    t_record=newVideo.duracion_grabacion
+    t_record=(newVideo.duracion_grabacion)*2
     thisVideoFile=dstDir + str(newVideo.num_video) + '.h264'
     try:
         camera=PiCamera()
@@ -162,8 +159,6 @@ def main():
                     
             camera.zoom=(roiX,roiY,roiW,roiH)
             camera.start_preview()
-            camera.stop_preview()
-
 
             camera.start_recording(thisVideoFile)
             #time.sleep(1)
