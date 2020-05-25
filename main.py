@@ -6,8 +6,11 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
-import picamera
-from picamera import PiCamera
+import threading
+from random import random
+
+#import picamera
+#from picamera import PiCamera
 import time
 from time import sleep
 import datetime 
@@ -495,7 +498,6 @@ class Ui_ConfigurarPantalla(object):
         self.lb_image.setPixmap(self.pixmap_image)
         self.lb_image.show()
         archivo=open("crop.txt", 'w')
-        #archivo.write(str(cx)+"\n"+str(cy)+"\n"+str(cw)+"\n"+str(ch))
         archivo.write(str(self.crop_x.value())+"\n"+str(self.crop_y.value())+"\n"+str(self.crop_width.value())+"\n"+str(self.crop_height.value()))
         archivo.close()
 
@@ -769,17 +771,30 @@ class Ui_MainWindow(QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #self.actionc_on.setText("Esperando orden...")
 
+    
 
     def grabar_video(self):
-        try:
-             
-             p=subprocess.Popen(args=["python3", "video.py"],
-                           stdout=subprocess.PIPE,
-                           stdin=subprocess.PIPE)
-             stdout=p.communicate()
-             print(stdout)
-        except:
-             print("CANCELADO")
+        def hilo_grabar():
+            try:
+                p=subprocess.Popen(args=["python3", "video.py"],
+                            stdout=subprocess.PIPE,
+                            stdin=subprocess.PIPE)
+                stdout=p.communicate()
+                print(stdout)
+            except:
+                print("CANCELADO")
+
+        def hilo_sensar():
+            contador=0
+            while contador<1000:
+                acum=20+random()%2+1
+                self.lb_temperatura.setText(acum)    
+                contador+=1
+
+        hilo1 = threading.Thread(target=hilo_grabar)
+        hilo2 = threading.Thread(target=hilo_sensar)
+        hilo1.start()
+        hilo2.start()
 
 
 

@@ -4,18 +4,18 @@ from glob import glob
 
 import subprocess
 from subprocess import check_output, CalledProcessError
-#asd
+
 
 import picamera
 from picamera import PiCamera
 import time
-#from time import sleep
 import datetime 
 
 
 class Video():
     crop_bool=0
     modo_fullscreen=1
+    modo_comprimir=0
     windows_x=0
     windows_y=0
     resize=1
@@ -31,20 +31,22 @@ class Video():
 
     def cargar_default(self):
         
-        print("LEYENDO VALORES DE LOS TXT")
+        print("Load configuration...")
         try:
             archivo = open("grabacion.txt")
-            self.duracion_grabacion=int(float(archivo.readline()
-))
+            self.duracion_grabacion=int(float(archivo.readline()))
             self.cantidad_videos=int(float(archivo.readline()))
             self.windows_x=archivo.readline()
             self.windows_y=archivo.readline()
-            print("SETEO DE RESOLUCION: "+self.windows_x+self.windows_y)
+            self.modo_comprimir=archivo.readline()
+            print("Resolution: "+self.windows_x+self.windows_y)
             archivo.close()
         except:
             print("ERROR AL LEER GRABACION.txt")
             self.duracion_grabacion=5
-            self.cantidad_videos=1    
+            self.cantidad_videos=1
+            self.windows_x=640
+            self.windows_y=480
 
         try:
             archivoRES = open("resolucion.txt")
@@ -90,12 +92,15 @@ class Video():
             print("ERROR AL LEER NUM.txt")
 
 
+# DISPOSITIVOS USB
 
 def get_usb_devices():
     sdb_devices = map(os.path.realpath, glob('/sys/block/sd*'))
     usb_devices = (dev for dev in sdb_devices
     if 'usb' in dev.split('/')[5])
     return dict((os.path.basename(dev), dev) for dev in usb_devices)
+
+# DIRECCION DEL USB
 
 def get_mount_points(devices=None):
     devices = devices or get_usb_devices() # if devices are None: get_usb_devices
@@ -124,90 +129,101 @@ def main():
     if not os.path.exists(dstDir):
         os.makedirs(dstDir)
 
+    #CANTIDAD DE VIDEOS
+    archivo = open("grabacion.txt")
+    cant=int(float(archivo.readline()))
+    cant=int(float(archivo.readline()))
+    archivo.close()
+
     
-    newVideo= Video()
-    newVideo.cargar_default()
-    t_record=(newVideo.duracion_grabacion)*2
-    thisVideoFile=dstDir + str(newVideo.num_video) + '.h264'
-    try:
-        camera=PiCamera()
-            #camera.sensor_mode = 1 
-            #camera.framerate = 25
-        if(newVideo.crop_bool==1):
-            print(str(newVideo.crop_x)+str(newVideo.crop_y)+str(newVideo.crop_w)+str(newVideo.crop_h))
-            regionOfInterest = (float(newVideo.crop_x),float(newVideo.crop_y),float(newVideo.crop_w),float(newVideo.crop_h))
-            (roiX, roiY, roiW, roiH) = regionOfInterest
-                    
-            width  = int(newVideo.windows_x)*roiW                     #Desired width
-            height = int(newVideo.windows_y)*roiH                    #Desired height
-                    
-            percentAspectRatio = roiW/roiH                #Ratio in percent of size 
-            imageAspectRatio   = width/height             #Desired aspect ratio
-            sensorAspectRatio  = int(newVideo.windows_x)/int(newVideo.windows_y) #Physical sensor aspect ratio       
+    for i in range(cant):
+        try:
+            newVideo=Video()
+            newVideo.cargar_default()
+            t_record=(newVideo.duracion_grabacion)*60
+            thisVideoFile=dstDir + str(newVideo.num_video) + '.h264'
 
-                    #The sensor is automatically cropped to fit current aspect ratio 
-                    #so we need to adjust zoom to take that into account
-            if (imageAspectRatio > sensorAspectRatio):    
-                roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
-                roiH = roiW                                  
-            
-            if (imageAspectRatio < sensorAspectRatio):   
-                roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
-                roiW = roiH 
-            
-            camera.resolution=(int(newVideo.windows_x),int(newVideo.windows_y))
-                    
-            camera.zoom=(roiX,roiY,roiW,roiH)
-            camera.start_preview()
-
-            camera.start_recording(thisVideoFile)
-            #time.sleep(1)
-            camera.wait_recording(t_preview)
-
-            camera.wait_recording(t_record)
-            camera.stop_recording()
-            camera.close()
-            completed=1
-        else:
-            if newVideo.modo_fullscreen==0:
-                print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
-                camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
-                camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(640/newVideo.resize),int(480/newVideo.resize)))
-                camera.start_recording(thisVideoFile)
-                #time.sleep(1)
-                camera.wait_recording(t_record)
-                camera.stop_preview()
-                camera.close()  
-                completed=1   
-            else:
-                print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
-                camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
-                camera.start_preview(fullscreen=True)
-                camera.start_recording(thisVideoFile)
-                #time.sleep(1)
-                camera.wait_recording(t_record)
-                camera.stop_preview()
-                camera.close()
-                completed=1     
+            camera=PiCamera()
+                #camera.sensor_mode = 1 
+                #camera.framerate = 25
+            if(newVideo.crop_bool==1):
+                print(str(newVideo.crop_x)+str(newVideo.crop_y)+str(newVideo.crop_w)+str(newVideo.crop_h))
+                regionOfInterest = (float(newVideo.crop_x),float(newVideo.crop_y),float(newVideo.crop_w),float(newVideo.crop_h))
+                (roiX, roiY, roiW, roiH) = regionOfInterest
                         
-    except KeyboardInterrupt:
-                print("terminando antes")
-                camera.stop_preview()
+                width  = int(newVideo.windows_x)*roiW                     #Desired width
+                height = int(newVideo.windows_y)*roiH                    #Desired height
+                        
+                percentAspectRatio = roiW/roiH                #Ratio in percent of size 
+                imageAspectRatio   = width/height             #Desired aspect ratio
+                sensorAspectRatio  = int(newVideo.windows_x)/int(newVideo.windows_y) #Physical sensor aspect ratio       
+
+                        #The sensor is automatically cropped to fit current aspect ratio 
+                        #so we need to adjust zoom to take that into account
+                if (imageAspectRatio > sensorAspectRatio):    
+                    roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
+                    roiH = roiW                                  
+                
+                if (imageAspectRatio < sensorAspectRatio):   
+                    roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
+                    roiW = roiH 
+                
+                camera.resolution=(int(newVideo.windows_x),int(newVideo.windows_y))
+                        
+                camera.zoom=(roiX,roiY,roiW,roiH)
+                camera.start_preview()
+
+                camera.start_recording(thisVideoFile)
+                #time.sleep(1)
+                camera.wait_recording(t_preview)
+
+                camera.wait_recording(t_record)
                 camera.stop_recording()
                 camera.close()
-    completed=1
-    if(completed==1):
-        print("GRABAR EN: "+get_mount_points())
-        
-        completed_video= os.path.join(get_mount_points(), thisVideoFile)
-        print("Camera finished recording... Beginning Convertion")
+                completed=1
+            else:
+                if newVideo.modo_fullscreen==0:
+                    print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
+                    camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
+                    camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(640/newVideo.resize),int(480/newVideo.resize)))
+                    camera.start_recording(thisVideoFile)
+                    #time.sleep(1)
+                    camera.wait_recording(t_record)
+                    camera.stop_preview()
+                    camera.close()  
+                    completed=1   
+                else:
+                    print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
+                    camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
+                    camera.start_preview(fullscreen=True)
+                    camera.start_recording(thisVideoFile)
+                    #time.sleep(1)
+                    camera.wait_recording(t_record)
+                    camera.stop_preview()
+                    camera.close()
+                    completed=1     
+                            
+        except KeyboardInterrupt:
+                    print("terminando antes")
+                    i=cant
+                    camera.stop_preview()
+                    camera.stop_recording()
+                    camera.close()
+                    completed=1
 
-        from subprocess import CalledProcessError
-        command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
-        try:
-            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-        except subprocess.CalledProcessError as e:
-            print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+
+        if(completed==1):
+            print("GRABAR EN: "+get_mount_points())
+            
+            completed_video= os.path.join(get_mount_points(), thisVideoFile)
+            print("Camera stop recording")
+            if(newVideo.modo_comprimir[0]=="y")
+                print("Beginning Convertion")
+                command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
+                try:
+                    output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+                except subprocess.CalledProcessError as e:
+                    print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
 
 if __name__ == "__main__":
     main()
