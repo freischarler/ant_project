@@ -9,8 +9,8 @@ from subprocess import Popen, PIPE
 import threading
 from random import random
 
-#import picamera
-#from picamera import PiCamera
+import picamera
+from picamera import PiCamera
 import time
 from time import sleep
 import datetime 
@@ -785,11 +785,13 @@ class Ui_MainWindow(QMainWindow):
                 print("CANCELADO")
 
         def hilo_sensar():
-            contador=0
-            while contador<1000:
-                acum=20+random()%2+1
-                self.lb_temperatura.setText(acum)    
-                contador+=1
+            while (1):
+                acum=20+int((random()%2)*100)+1
+                self.lb_temperatura.setText(str(acum))    
+                self.lb_humedad.setText(str(acum*4))
+                self.lb_luz.setText(str(acum*100))
+                time.sleep(3)
+                
 
         hilo1 = threading.Thread(target=hilo_grabar)
         hilo2 = threading.Thread(target=hilo_sensar)

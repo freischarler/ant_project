@@ -38,7 +38,8 @@ class Video():
             self.cantidad_videos=int(float(archivo.readline()))
             self.windows_x=archivo.readline()
             self.windows_y=archivo.readline()
-            self.modo_comprimir=archivo.readline()
+            comprimir=archivo.readline()
+            if(comprimir[0]=="y"): self.modo_comprimir=1
             print("Resolution: "+self.windows_x+self.windows_y)
             archivo.close()
         except:
@@ -140,7 +141,7 @@ def main():
         try:
             newVideo=Video()
             newVideo.cargar_default()
-            t_record=(newVideo.duracion_grabacion)*60
+            t_record=(newVideo.duracion_grabacion)*1
             thisVideoFile=dstDir + str(newVideo.num_video) + '.h264'
 
             camera=PiCamera()
@@ -217,7 +218,7 @@ def main():
             
             completed_video= os.path.join(get_mount_points(), thisVideoFile)
             print("Camera stop recording")
-            if(newVideo.modo_comprimir[0]=="y")
+            if(newVideo.modo_comprimir==1):
                 print("Beginning Convertion")
                 command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
                 try:
