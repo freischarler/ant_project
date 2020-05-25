@@ -1,6 +1,8 @@
 import os
 import sys
 from glob import glob
+
+import subprocess
 from subprocess import check_output, CalledProcessError
 #asd
 
@@ -28,7 +30,22 @@ class Video():
 
 
     def cargar_default(self):
+        
         print("LEYENDO VALORES DE LOS TXT")
+        try:
+            archivo = open("grabacion.txt")
+            self.duracion_grabacion=int(float(archivo.readline()
+))
+            self.cantidad_videos=int(float(archivo.readline()))
+            self.windows_x=archivo.readline()
+            self.windows_y=archivo.readline()
+            print("SETEO DE RESOLUCION: "+self.windows_x+self.windows_y)
+            archivo.close()
+            print("VALORES CARGADOS")
+        except:
+            print("ERROR AL LEER GRABACION.txt")
+            self.duracion_grabacion=5
+            self.cantidad_videos=1    
 
         try:
             print("LEE RESOLUCION")
@@ -60,31 +77,22 @@ class Video():
 
         except:
             print("problema lectura crop")
+            self.crop_bool=0
+
 
         try:
-            archi_acum=open("num.txt", 'r+')
+            archi_acum=open("num.txt")
             self.num_video=archi_acum.readline().replace('\n', '')
-            num_video=num_video+1
-            archi_acum.seek(0)
-            archi_acum.write(str(archi_acum))
             archi_acum.close()
-
+            self.num_video=int(self.num_video)+1   
+            archi_acum2=open("num.txt", 'w')
+            archi_acum2.write(str(self.num_video))
+            archi_acum2.close()
+            print("VIDEO N~: "+str(self.num_video))
         except:
             print("ERROR AL LEER NUM.txt")
 
-        try:
-            archivo = open("grabacion.txt")
-            self.duracion_grabacion=int(archivo.readline())
-            self.cantidad_videos=int(archivo.readline())
-            self.windows_x=archivo.readline()
-            self.windows_y=archivo.readline()
-            print("SETEO DE RESOLUCION: "+self.windows_x+self.windows_y)
-            archivo.close()
-            print("VALORES CARGADOS")
-        except:
-            print("ERROR AL LEER GRABACION.txt")
-            self.duracion_grabacion=5
-            self.cantidad_videos=1    
+
 
 def get_usb_devices():
     sdb_devices = map(os.path.realpath, glob('/sys/block/sd*'))
@@ -102,7 +110,7 @@ def get_mount_points(devices=None):
     usb_info=(line for line in output if is_usb(line.split()[0]))
     #result=[(info.split()[0],info.split()[2]) for info in usb_info]
     result=[(info.split()[2]) for info in usb_info]
-    print(result)
+    
     if len(result):
         return result.pop()
     else:
@@ -111,7 +119,7 @@ def get_mount_points(devices=None):
 
 
 def main():
-    completed=False
+    completed=0
     t_preview=2
 
     #make destination direcory
@@ -121,11 +129,9 @@ def main():
 
     
     newVideo= Video()
-    newVideo.cargar_default
+    newVideo.cargar_default()
     t_record=newVideo.duracion_grabacion
-
-    video_name=dstDir + str(Video.num_video) + '.h264'
-
+    thisVideoFile=dstDir + str(newVideo.num_video) + '.h264'
     try:
         camera=PiCamera()
             #camera.sensor_mode = 1 
@@ -159,48 +165,50 @@ def main():
             camera.stop_preview()
 
 
-            camera.start_recording("pythonVideo.h264")
+            camera.start_recording(thisVideoFile)
             #time.sleep(1)
             camera.wait_recording(t_preview)
 
             camera.wait_recording(t_record)
             camera.stop_recording()
             camera.close()
-            completed=True
+            completed=1
         else:
             if newVideo.modo_fullscreen==0:
                 print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                 camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                 camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(640/newVideo.resize),int(480/newVideo.resize)))
-                camera.start_recording("pythonVideo.h264")
+                camera.start_recording(thisVideoFile)
                 #time.sleep(1)
                 camera.wait_recording(t_record)
                 camera.stop_preview()
                 camera.close()  
-                completed=True      
+                completed=1   
             else:
                 print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                 camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                 camera.start_preview(fullscreen=True)
-                camera.start_recording("pythonVideo.h264")
+                camera.start_recording(thisVideoFile)
                 #time.sleep(1)
                 camera.wait_recording(t_record)
                 camera.stop_preview()
                 camera.close()
-                completed=True       
+                completed=1     
                         
     except KeyboardInterrupt:
                 print("terminando antes")
                 camera.stop_preview()
                 camera.stop_recording()
                 camera.close()
-    
-    if(completed=="True"):
-        completed_video= os.path.join(get_mount_points(), video_name)
+    completed=1
+    if(completed==1):
+        print("GRABAR EN: "+get_mount_points())
+        
+        completed_video= os.path.join(get_mount_points(), thisVideoFile)
         print("Camera finished recording... Beginning Convertion")
 
         from subprocess import CalledProcessError
-        command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(video_name)[0],completed_video)
+        command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
         try:
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as e:

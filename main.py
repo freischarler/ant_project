@@ -6,8 +6,8 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
-#import picamera
-#from picamera import PiCamera
+import picamera
+from picamera import PiCamera
 import time
 from time import sleep
 import datetime 
