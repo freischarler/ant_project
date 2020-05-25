@@ -1,5 +1,6 @@
 import os
 import sys
+from glob import glob
 
 import picamera
 from picamera import PiCamera
@@ -20,6 +21,7 @@ class Video():
     crop_h=1
     windows_posx=0
     windows_posy=0
+    num_video=0
 
 
     def cargar_default(self):
@@ -42,7 +44,17 @@ class Video():
             print("problema lectura crop")
 
         try:
-            print("LEE RESOLUCION")
+            archi_acum=open("num.txt", 'r+')
+            self.num_video=int(archi_acum.readline().replace('\n', ''))
+            num_video=num_video+1
+            archi_acum.seek(0)
+            archi_acum.write(str(archi_acum))
+            archi_acum.close()
+
+        except:
+            print("ERROR AL LEER NUM.txt")
+
+        try:
             archivoRES = open("resolucion.txt")
             txt_f=archivoRES.readline()
             if(txt_f[0]=="y"): self.modo_fullscreen=1
@@ -50,33 +62,64 @@ class Video():
                 self.modo_fullscreen=0
                 self.windows_posx=int(archivoRES.readline())
                 self.windows_posy=int(archivoRES.readline())
-                self.resize=int(archivoRES.readline())
-                
+                self.resize=int(archivoRES.readline())      
             archivoRES.close()
+        except:
+            print("ERROR AL LEER RESOLUCION.txt")
 
-            print("LEE GRABACION")
-
+        try:
             archivo = open("grabacion.txt")
-            self.duracion_grabacion=archivo.readline()
-            self.cantidad_videos=archivo.readline()
+            self.duracion_grabacion=int(archivo.readline())
+            self.cantidad_videos=int(archivo.readline())
             self.windows_x=archivo.readline()
             self.windows_y=archivo.readline()
             print("SETEO DE RESOLUCION: "+self.windows_x+self.windows_y)
             archivo.close()
             print("VALORES CARGADOS")
         except:
+            print("ERROR AL LEER GRABACION.txt")
             self.duracion_grabacion=5
             self.cantidad_videos=1    
-    
+
+def get_usb_devices():
+    sdb_devices = map(os.path.realpath, glob('/sys/block/sd*'))
+    usb_devices = (dev for dev in sdb_devices
+    if 'usb' in dev.split('/')[5])
+    return dict((os.path.basename(dev), dev) for dev in usb_devices)
+
+def get_mount_points(devices=None):
+    devices = devices or get_usb_devices() # if devices are None: get_usb_devices
+    output = check_output(['mount']).splitlines()
+    is_usb = lambda path: any(dev in path for dev in devices)
+    usb_info = (line for line in output if is_usb(line.split()[0]))
+    result = [(info.split()[2]) for info in usb_info]
+    if len(result):
+        return result.pop()
+    else:
+        print('No USB Drive' )
+        blink_error()
+
+
 def main():
+    
     t_preview=2
-    t_record=5
+
+    #make destination direcory
+    dstDir = get_mount_points()  + '/'
+    if not os.path.exists(dstDir):
+        os.makedirs(dstDir)
+
+    
     newVideo= Video()
     newVideo.cargar_default()
+    t_record=newVideo.duracion_grabacion()
+
+    video_name=dstDir + str(Video.num_video()) + '.h264'
 
     try:
         camera=PiCamera()
-            #print("CROP BOOL RECIBIDO"+str(self.crop_bool))
+            #camera.sensor_mode = 1 
+            #camera.framerate = 25
         if(newVideo.crop_bool==1):
             print(str(newVideo.crop_x)+str(newVideo.crop_y)+str(newVideo.crop_w)+str(newVideo.crop_h))
             regionOfInterest = (float(newVideo.crop_x),float(newVideo.crop_y),float(newVideo.crop_w),float(newVideo.crop_h))
@@ -103,11 +146,13 @@ def main():
                     
             camera.zoom=(roiX,roiY,roiW,roiH)
             camera.start_preview()
+            camera.stop_preview()
+
+
             camera.start_recording("pythonVideo.h264")
             #time.sleep(1)
             camera.wait_recording(t_preview)
-			
-            camera.stop_preview()
+
             camera.wait_recording(t_record)
             camera.stop_recording()
             camera.close()                
@@ -118,7 +163,7 @@ def main():
                 camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(640/newVideo.resize),int(480/newVideo.resize)))
                 camera.start_recording("pythonVideo.h264")
                 #time.sleep(1)
-                camera.wait_recording(10)
+                camera.wait_recording(t_record)
                 camera.stop_preview()
                 camera.close()        
             else:
@@ -127,7 +172,7 @@ def main():
                 camera.start_preview(fullscreen=True)
                 camera.start_recording("pythonVideo.h264")
                 #time.sleep(1)
-                camera.wait_recording(10)
+                camera.wait_recording(t_record)
                 camera.stop_preview()
                 camera.close()        
                         
@@ -135,7 +180,18 @@ def main():
                 print("terminando antes")
                 camera.stop_preview()
                 camera.stop_recording()
-                camera.close()                
+                camera.close()
+    
+    if(completed==true)
+        completed_video= os.path.join(get_mount_points(), video_name)
+        print("Camera finished recording... Beginning Convertion")
+
+        from subprocess import CalledProcessError
+        command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(video_name)[0],completed_video)
+        try:
+            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+        except subprocess.CalledProcessError as e:
+            print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
 
 if __name__ == "__main__":
     main()

@@ -6,8 +6,8 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
-import picamera
-from picamera import PiCamera
+#import picamera
+#from picamera import PiCamera
 import time
 from time import sleep
 import datetime 
@@ -281,13 +281,13 @@ class Ui_ConfigurarPantalla(object):
 
         if(self.resolucion_x[:2]=="19"): 
             self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1920x1080"))
-
         if(self.resolucion_x[:2]=="16"): 
             self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1640x1232"))
         if(self.resolucion_x[:2]=="12"): 
             self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1280x720"))
         if(self.resolucion_x[:2]=="64"): 
             self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("640x480"))
+            
         ######################################
         #CARGAMOS VALORES DE LA VENTANA VISUALIZACION
         ######################################
@@ -694,11 +694,11 @@ class Ui_MainWindow(QMainWindow):
         self.actionConexion_configuracion.setObjectName("actionConexion_configuracion")
         self.actionRecord = QtWidgets.QAction(QIcon("play.png"), "Your button", self)
         self.actionRecord.setObjectName("actionRecord")
-        self.actionactionStop = QtWidgets.QAction(QIcon("stop.png"), "Your button", self)
-        self.actionactionStop.setObjectName("actionactionStop")
+        #self.actionactionStop = QtWidgets.QAction(QIcon("stop.png"), "Your button", self)
+        #self.actionactionStop.setObjectName("actionactionStop")
         self.actionConection = QtWidgets.QAction(QIcon("wifi.png"), "Your button", self)
         self.actionConection.setObjectName("actionConection")
-        button_action = QAction(QIcon("bug.png"), "Your button", self)
+        self.button_action = QAction(QIcon("bug.png"), "Your button", self)
         self.actionCargar_configuracion = QtWidgets.QAction(MainWindow)
         self.actionCargar_configuracion.setObjectName("actionCargar_configuracion")
         self.actionConsultarBD = QtWidgets.QAction(MainWindow)
@@ -744,7 +744,7 @@ class Ui_MainWindow(QMainWindow):
         self.menubar.addAction(self.menuBase_de_Datox.menuAction())
         self.menubar.addAction(self.menuAyuda.menuAction())
         self.toolBar.addAction(self.actionRecord)
-        self.toolBar.addAction(self.actionactionStop)
+        #self.toolBar.addAction(self.actionactionStop)
         self.toolBar.addAction(self.actionConection)
         self.toolBar.addAction(self.actionConfigurar)
         #self.toolBar.addAction(self.actionConfiguration)
@@ -760,7 +760,7 @@ class Ui_MainWindow(QMainWindow):
         self.actionConection.triggered.connect(self.show_coneccion)
         self.actionPantalla_configuracion.triggered.connect(self.show_pantalla)
         self.actionConfigurar.triggered.connect(self.show_pantalla)
-        self.actionactionStop.triggered.connect(self.detener_grabacion)
+        #self.actionactionStop.triggered.connect(self.detener_grabacion)
         self.actionRecord.triggered.connect(self.grabar_video)
         self.actionGuardar_configuracion.triggered.connect(self.grabar_video)
         #self.actionConfiguration.triggered.connect(self.show_config)   
@@ -769,19 +769,14 @@ class Ui_MainWindow(QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #self.actionc_on.setText("Esperando orden...")
 
-    def detener_grabacion(self):
-        camera.stop_preview()
-        camera.close()
 
     def grabar_video(self):
-        self.actionactionStop.setEnabled(True)
-        sleep(1)
         try:
              
              p=subprocess.Popen(args=["python3", "video.py"],
                            stdout=subprocess.PIPE,
                            stdin=subprocess.PIPE)
-             stdout, stderr=p.communicate()
+             stdout=p.communicate()
              print(stdout)
         except:
              print("CANCELADO")
@@ -820,8 +815,8 @@ class Ui_MainWindow(QMainWindow):
         self.actionConexion.setText(_translate("MainWindow", "Conexion"))
         self.actionConexion_configuracion.setText(_translate("MainWindow", "Conectar"))
         self.actionRecord.setText(_translate("MainWindow", "Grabar"))
-        self.actionactionStop.setText(_translate("MainWindow", "Parar"))
-        self.actionactionStop.setEnabled(False)
+        #self.actionactionStop.setText(_translate("MainWindow", "Parar"))
+        #self.actionactionStop.setEnabled(False)
         self.actionConection.setText(_translate("MainWindow", "Conectar"))
         self.actionCargar_configuracion.setText(_translate("MainWindow", "Cargar configuracion"))
         self.actionConsultarBD.setText(_translate("MainWindow", "Consultar"))
@@ -839,6 +834,7 @@ class Ui_MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     import sys
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
