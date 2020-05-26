@@ -786,10 +786,16 @@ class Ui_MainWindow(QMainWindow):
 
         def hilo_sensar():
             while (1):
+                #newfont = QtGui.QFont("Ubuntu", 36, QtGui.QFont.Bold)
+                newfont = QtGui.QFont("Ubuntu", 36) 
                 acum=20+int((random()%2)*100)+1
-                self.lb_temperatura.setText(str(acum))    
+                self.lb_temperatura.setText(str(acum))
+                self.lb_temperatura.setStyleSheet("")   
                 self.lb_humedad.setText(str(acum*4))
                 self.lb_luz.setText(str(acum*100))
+                self.lb_temperatura.setFont(newfont)
+                self.lb_humedad.setFont(newfont)
+                self.lb_luz.setFont(newfont)
                 time.sleep(3)
                 
 
