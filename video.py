@@ -5,11 +5,15 @@ from glob import glob
 import subprocess
 from subprocess import check_output, CalledProcessError
 
-
 import picamera
 from picamera import PiCamera
 import time
-import datetime 
+from datetime import datetime, date
+
+import RPi.GPIO as GPIO
+
+ErrorPin=13
+RecLed=15
 
 
 class Video():
@@ -25,7 +29,7 @@ class Video():
     crop_h=1
     windows_posx=0
     windows_posy=0
-    num_video=0
+    name="test"
     duracion_grabacion=0
 
 
@@ -74,23 +78,18 @@ class Video():
                 self.crop_bool=0
             else:
                 self.crop_bool=1
-            print("VALOR BOOL CROP: "+str(self.crop_bool))
+            #print("VALOR BOOL CROP: "+str(self.crop_bool))
 
         except:
             print("problema lectura crop")
             self.crop_bool=0
 
         try:
-            archi_acum=open("num.txt")
-            self.num_video=archi_acum.readline().replace('\n', '')
-            archi_acum.close()
-            self.num_video=int(self.num_video)+1   
-            archi_acum2=open("num.txt", 'w')
-            archi_acum2.write(str(self.num_video))
-            archi_acum2.close()
-            print("VIDEO N~: "+str(self.num_video))
+            formato="%Y%m%d-%H %M %S"
+            fecha=datetime.now()
+            self.name=fecha.strftime(formato)
         except:
-            print("ERROR AL LEER NUM.txt")
+            print("ERROR AL ESTABLECER FECHA.txt")
 
 
 # DISPOSITIVOS USB
@@ -117,11 +116,32 @@ def get_mount_points(devices=None):
     if len(result):
         return result.pop()
     else:
-        print('No USB Drive' )
+        print('CONECTE UN DISPOSITIVO USB PARA GRABAR!' )
         blink_error()
 
+def setup():
+    GPIO.setmode(GPIO.BOARD)            # Numbers GPIOs by physical location
+    GPIO.setup(ErrorPin, GPIO.OUT)      # Set pin mode as output
+    GPIO.output(ErrorPin, GPIO.LOW)    # Set pin low to turn on led
+    GPIO.setup(RecLed, GPIO.OUT)      # Set pin mode as output
+    GPIO.output(RecLed, GPIO.LOW)    # Set pin low to turn on led
+
+
+def blink_error():
+    while True:
+        GPIO.output(ErrorPin, GPIO.HIGH)
+        time.sleep(0.3)
+        GPIO.output(ErrorPin, GPIO.LOW)
+        time.sleep(0.3)
+
+def blink_rec():
+    GPIO.output(RecLed, GPIO.HIGH)
+    time.sleep(0.2)
+    GPIO.output(RecLed, GPIO.LOW)
+    time.sleep(0.2)
 
 def main():
+    setup()
     completed=0
     t_preview=2
 
@@ -142,8 +162,7 @@ def main():
             newVideo=Video()
             newVideo.cargar_default()
             t_record=(newVideo.duracion_grabacion)*1
-            thisVideoFile=dstDir + str(newVideo.num_video) + '.h264'
-
+            thisVideoFile=dstDir + newVideo.name + '.h264'
             camera=PiCamera()
                 #camera.sensor_mode = 1 
                 #camera.framerate = 25
@@ -177,7 +196,7 @@ def main():
                 camera.start_recording(thisVideoFile)
                 #time.sleep(1)
                 camera.wait_recording(t_preview)
-
+                blink_rec()
                 camera.wait_recording(t_record)
                 camera.stop_recording()
                 camera.close()
@@ -190,6 +209,7 @@ def main():
                     camera.start_recording(thisVideoFile)
                     #time.sleep(1)
                     camera.wait_recording(t_record)
+                    blink_rec()
                     camera.stop_preview()
                     camera.close()  
                     completed=1   
@@ -200,6 +220,7 @@ def main():
                     camera.start_recording(thisVideoFile)
                     #time.sleep(1)
                     camera.wait_recording(t_record)
+                    blink_rec()
                     camera.stop_preview()
                     camera.close()
                     completed=1     

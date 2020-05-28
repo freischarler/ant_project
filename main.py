@@ -547,10 +547,10 @@ class Ui_ConeccionWifi(object):
         self.le_pwd.setGeometry(QtCore.QRect(190, 80, 113, 25))
         self.le_pwd.setObjectName("le_pwd")
         self.label = QtWidgets.QLabel(ConeccionWifi)
-        self.label.setGeometry(QtCore.QRect(110, 40, 31, 17))
+        self.label.setGeometry(QtCore.QRect(110, 40, 78, 17))
         self.label.setObjectName("label")
         self.label_2 = QtWidgets.QLabel(ConeccionWifi)
-        self.label_2.setGeometry(QtCore.QRect(110, 80, 67, 17))
+        self.label_2.setGeometry(QtCore.QRect(110, 80, 78, 17))
         self.label_2.setObjectName("label_2")
         self.pushButton_conectar = QtWidgets.QPushButton(ConeccionWifi)
         self.pushButton_conectar.setGeometry(QtCore.QRect(150, 120, 89, 25))
@@ -775,22 +775,28 @@ class Ui_MainWindow(QMainWindow):
 
     def grabar_video(self):
         def hilo_grabar():
+            newfont = QtGui.QFont("Ubuntu", 36) 
+            self.status_mainBar.setText("Grabando video")
+            self.lb_temperatura.setFont(newfont)
             try:
+                
                 p=subprocess.Popen(args=["python3", "video.py"],
                             stdout=subprocess.PIPE,
                             stdin=subprocess.PIPE)
                 stdout=p.communicate()
                 print(stdout)
+                
             except:
                 print("CANCELADO")
+            self.status_mainBar.setText("Esperando una accion")
+            self.lb_temperatura.setFont(newfont)
 
         def hilo_sensar():
             while (1):
                 #newfont = QtGui.QFont("Ubuntu", 36, QtGui.QFont.Bold)
                 newfont = QtGui.QFont("Ubuntu", 36) 
                 acum=20+int((random()%2)*100)+1
-                self.lb_temperatura.setText(str(acum))
-                self.lb_temperatura.setStyleSheet("")   
+                self.lb_temperatura.setText(str(acum)) 
                 self.lb_humedad.setText(str(acum*4))
                 self.lb_luz.setText(str(acum*100))
                 self.lb_temperatura.setFont(newfont)
@@ -827,7 +833,7 @@ class Ui_MainWindow(QMainWindow):
         self.lb_humedad.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">69%</span></p></body></html>"))
         self.t_luz.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\">Luz:</p></body></html>"))
         self.lb_luz.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">600 lux</span></p></body></html>"))
-        self.status_mainBar.setText(_translate("MainWindow", "<html><head/><body><p>description</p></body></html>"))
+        self.status_mainBar.setText(_translate("MainWindow", "<html><head/><body><p>Esperando una accion</p></body></html>"))
         self.label.setText(_translate("MainWindow", "Estado:"))
         self.menuSistema.setTitle(_translate("MainWindow", "Sistema"))
         self.menuBase_de_Datox.setTitle(_translate("MainWindow", "Base de Datos"))
