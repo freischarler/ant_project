@@ -3,4 +3,4 @@
 # s.py: 90% - CONFIGURACION DE LA INTERFASE PARA MANEJAR LA VENTANA Y REALIZAR CROP
 
 #instalar:
-#sudo apt-get install python-usb python3-usb
+sudo apt-get install python3-rpi.gpio
