@@ -243,6 +243,7 @@ class Ui_ConfigurarPantalla(object):
         self.checkBox_convertir.toggled.connect(self.actualizar)
         self.le_wx.valueChanged.connect(self.actualizar_2)
         self.le_wy.valueChanged.connect(self.actualizar_2)
+        self.checkBox_convertir.toggled.connect(self.actualizar)
         self.cbox_size.currentIndexChanged.connect(self.actualizar_2)
         
 	#-----------------------------

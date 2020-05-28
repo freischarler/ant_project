@@ -85,7 +85,7 @@ class Video():
             self.crop_bool=0
 
         try:
-            formato="%Y%m%d-%H %M %S"
+            formato="%Y%m%d-%H%M%S"
             fecha=datetime.now()
             self.name=fecha.strftime(formato)
         except:
@@ -233,7 +233,7 @@ def main():
                     camera.close()
                     completed=1
 
-
+        GPIO.cleanup()
         if(completed==1):
             print("GRABAR EN: "+get_mount_points())
             
