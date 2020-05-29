@@ -760,7 +760,10 @@ class Ui_MainWindow(QMainWindow):
                 while (1):
                         newfont = QtGui.QFont("Ubuntu", 36) 
                         acum=20+int((random()%2)*100)+1
-                        self.lb_temperatura.setText(str(acum)) 
+                        temp = os.popen("vcgencmd measure_temp").readline()
+                        temp =temp.partition("'C")
+                        temp =temp[0].replace("temp=","")
+                        self.lb_temperatura.setText(temp) 
                         self.lb_humedad.setText(str(acum*4))
                         self.lb_luz.setText(str(acum*100))
                         self.lb_temperatura.setFont(newfont)
