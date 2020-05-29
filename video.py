@@ -157,6 +157,7 @@ def main():
             t_record=(newVideo.duracion_grabacion)*60
             thisVideoFile=dstDir + newVideo.name + '.h264'
             camera=PiCamera()
+            blink_rec()
                 #camera.sensor_mode = 1 
                 #camera.framerate = 25
             if(newVideo.crop_bool==1):
@@ -199,7 +200,6 @@ def main():
                     camera.start_recording(thisVideoFile)
 
             camera.wait_recording(t_preview)
-            blink_rec()
             camera.wait_recording(t_record)
             camera.stop_recording()
             camera.close()
