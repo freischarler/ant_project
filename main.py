@@ -509,7 +509,7 @@ class Ui_ConfigurarPantalla(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Configuracion de video y pantalla"))
         self.label_3.setText(_translate("Dialog", "Inicio (hora):"))
         self.label_2.setText(_translate("Dialog", "Duración (minutos):"))
         self.label_4.setText(_translate("Dialog", "Cantidad de videos:"))
@@ -657,7 +657,7 @@ class Ui_MainWindow(QMainWindow):
         self.status_mainBar.setGeometry(QtCore.QRect(170, 130, 421, 39))
         
         palette = QtGui.QPalette()
-        brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+        brush = QtGui.QBrush(QtGui.QColor(255, 255, 225))
         brush.setStyle(QtCore.Qt.SolidPattern)    
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipBase, brush)
         self.status_mainBar.setPalette(palette)
@@ -756,6 +756,17 @@ class Ui_MainWindow(QMainWindow):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
+        def hilo_sensado():
+                while (1):
+                        newfont = QtGui.QFont("Ubuntu", 36) 
+                        acum=20+int((random()%2)*100)+1
+                        self.lb_temperatura.setText(str(acum)) 
+                        self.lb_humedad.setText(str(acum*4))
+                        self.lb_luz.setText(str(acum*100))
+                        self.lb_temperatura.setFont(newfont)
+                        self.lb_humedad.setFont(newfont)
+                        self.lb_luz.setFont(newfont)
+                        time.sleep(3)
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
@@ -776,19 +787,10 @@ class Ui_MainWindow(QMainWindow):
         #self.retranslateUi(MainWindow)
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #self.actionc_on.setText("Esperando orden...")
-
-    def hilo_sensado(self):
-        while (1):
-                #newfont = QtGui.QFont("Ubuntu", 36, QtGui.QFont.Bold)
-                newfont = QtGui.QFont("Ubuntu", 36) 
-                acum=20+int((random()%2)*100)+1
-                self.lb_temperatura.setText(str(acum)) 
-                self.lb_humedad.setText(str(acum*4))
-                self.lb_luz.setText(str(acum*100))
-                self.lb_temperatura.setFont(newfont)
-                self.lb_humedad.setFont(newfont)
-                self.lb_luz.setFont(newfont)
-                time.sleep(3)
+        self.actionSalir.triggered.connect(self.salir)
+    
+    def salir(self):
+            QCoreApplication.quit()
 
     def grabar_video(self):
         def hilo_grabar_video():
@@ -808,7 +810,7 @@ class Ui_MainWindow(QMainWindow):
             self.status_mainBar.setText("Esperando una accion")
             self.lb_temperatura.setFont(newfont)
 
-        def hilo_grabar_sensar():
+        def hilo_grabar_sensor():
             while (1):
                 #SE GRABARIAN LOS DATOS
                 time.sleep(10)
@@ -835,7 +837,7 @@ class Ui_MainWindow(QMainWindow):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "ANTVRecord"))
         self.t_temperatura.setText(_translate("MainWindow", "Temperatura:"))
         self.lb_temperatura.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">15°</span></p></body></html>"))
         self.t_humedad.setText(_translate("MainWindow", "Humedad:"))
