@@ -8,6 +8,7 @@ from subprocess import check_output, CalledProcessError
 import picamera
 from picamera import PiCamera
 import time
+import datetime
 from datetime import datetime, date
 
 
