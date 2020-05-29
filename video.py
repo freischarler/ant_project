@@ -8,7 +8,7 @@ from subprocess import check_output, CalledProcessError
 import picamera
 from picamera import PiCamera
 import time
-import datetime
+import datetime as dt
 from datetime import datetime, date
 
 
@@ -154,11 +154,11 @@ def main():
     archivo.close()
     
     for _ in range(cant):
-        start=datetime.datetime.now()
+        start=dt.datetime.now()
         try:
             newVideo=Video()
             newVideo.cargar_default()
-            t_record=(newVideo.duracion_grabacion)*60
+            t_record=(newVideo.duracion_grabacion)*1
             thisVideoFile=dstDir + newVideo.name + '.h264'
             camera=PiCamera()
             
@@ -202,7 +202,7 @@ def main():
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                     camera.start_preview(fullscreen=True)
                     camera.start_recording(thisVideoFile)
-            while (datetime.datetime.now() - start).seconds < t_record: 
+            while (dt.datetime.now() - start).seconds < t_record: 
                     camera.wait_recording(.5)
                     blink_rec()
             camera.stop_recording()
