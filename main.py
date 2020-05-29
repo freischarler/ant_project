@@ -625,6 +625,7 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
         MainWindow.resize(640, 308)
+        
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(self.centralwidget)
@@ -755,6 +756,10 @@ class Ui_MainWindow(QMainWindow):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
+        hilo0 = threading.Thread(target=hilo_sensado)
+        hilo0.start()
+
+        
         #----------------------------------------------------------
         #FUNCIONES DEL MENU
         #----------------------------------------------------------
@@ -772,10 +777,21 @@ class Ui_MainWindow(QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #self.actionc_on.setText("Esperando orden...")
 
-    
+    def hilo_sensado(self):
+        while (1):
+                #newfont = QtGui.QFont("Ubuntu", 36, QtGui.QFont.Bold)
+                newfont = QtGui.QFont("Ubuntu", 36) 
+                acum=20+int((random()%2)*100)+1
+                self.lb_temperatura.setText(str(acum)) 
+                self.lb_humedad.setText(str(acum*4))
+                self.lb_luz.setText(str(acum*100))
+                self.lb_temperatura.setFont(newfont)
+                self.lb_humedad.setFont(newfont)
+                self.lb_luz.setFont(newfont)
+                time.sleep(3)
 
     def grabar_video(self):
-        def hilo_grabar():
+        def hilo_grabar_video():
             newfont = QtGui.QFont("Ubuntu", 36) 
             self.status_mainBar.setText("Grabando video")
             self.lb_temperatura.setFont(newfont)
@@ -792,22 +808,14 @@ class Ui_MainWindow(QMainWindow):
             self.status_mainBar.setText("Esperando una accion")
             self.lb_temperatura.setFont(newfont)
 
-        def hilo_sensar():
+        def hilo_grabar_sensar():
             while (1):
-                #newfont = QtGui.QFont("Ubuntu", 36, QtGui.QFont.Bold)
-                newfont = QtGui.QFont("Ubuntu", 36) 
-                acum=20+int((random()%2)*100)+1
-                self.lb_temperatura.setText(str(acum)) 
-                self.lb_humedad.setText(str(acum*4))
-                self.lb_luz.setText(str(acum*100))
-                self.lb_temperatura.setFont(newfont)
-                self.lb_humedad.setFont(newfont)
-                self.lb_luz.setFont(newfont)
-                time.sleep(3)
+                #SE GRABARIAN LOS DATOS
+                time.sleep(10)
                 
 
-        hilo1 = threading.Thread(target=hilo_grabar)
-        hilo2 = threading.Thread(target=hilo_sensar)
+        hilo1 = threading.Thread(target=hilo_grabar_video)
+        hilo2 = threading.Thread(target=hilo_grabar_sensor)
         hilo1.start()
         hilo2.start()
 
@@ -819,7 +827,7 @@ class Ui_MainWindow(QMainWindow):
         dialog.ui.setupUi(dialog)
         dialog.show()        
 
-    def show_coneccion(self):                                             # <===
+    def show_coneccion(self):                                            
         dialog = ConeccionWifi(self)  # self hace referencia al padre
         dialog.ui=Ui_ConeccionWifi()
         dialog.ui.setupUi(dialog)

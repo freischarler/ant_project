@@ -15,7 +15,6 @@ import RPi.GPIO as GPIO
 ErrorPin=13
 RecLed=15
 
-
 class Video():
     crop_bool=0
     modo_fullscreen=1
@@ -34,7 +33,6 @@ class Video():
 
 
     def cargar_default(self):
-        
         print("Load configuration...")
         try:
             archivo = open("grabacion.txt")
@@ -78,12 +76,9 @@ class Video():
                 self.crop_bool=0
             else:
                 self.crop_bool=1
-            #print("VALOR BOOL CROP: "+str(self.crop_bool))
-
         except:
             print("problema lectura crop")
             self.crop_bool=0
-
         try:
             formato="%Y%m%d-%H%M%S"
             fecha=datetime.now()
@@ -126,7 +121,6 @@ def setup():
     GPIO.setup(RecLed, GPIO.OUT)      # Set pin mode as output
     GPIO.output(RecLed, GPIO.LOW)    # Set pin low to turn on led
 
-
 def blink_error():
     while True:
         GPIO.output(ErrorPin, GPIO.HIGH)
@@ -155,9 +149,8 @@ def main():
     cant=int(float(archivo.readline()))
     cant=int(float(archivo.readline()))
     archivo.close()
-
     
-    for i in range(cant):
+    for _ in range(cant):
         try:
             newVideo=Video()
             newVideo.cargar_default()
@@ -167,7 +160,7 @@ def main():
                 #camera.sensor_mode = 1 
                 #camera.framerate = 25
             if(newVideo.crop_bool==1):
-                print(str(newVideo.crop_x)+str(newVideo.crop_y)+str(newVideo.crop_w)+str(newVideo.crop_h))
+                print("MODO CROP: "+str(newVideo.crop_x)+str(newVideo.crop_y)+str(newVideo.crop_w)+str(newVideo.crop_h))
                 regionOfInterest = (float(newVideo.crop_x),float(newVideo.crop_y),float(newVideo.crop_w),float(newVideo.crop_h))
                 (roiX, roiY, roiW, roiH) = regionOfInterest
                         
@@ -192,55 +185,41 @@ def main():
                         
                 camera.zoom=(roiX,roiY,roiW,roiH)
                 camera.start_preview()
-
                 camera.start_recording(thisVideoFile)
-                #time.sleep(1)
-                camera.wait_recording(t_preview)
-                blink_rec()
-                camera.wait_recording(t_record)
-                camera.stop_recording()
-                camera.close()
-                completed=1
             else:
                 if newVideo.modo_fullscreen==0:
                     print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                     camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(640/newVideo.resize),int(480/newVideo.resize)))
                     camera.start_recording(thisVideoFile)
-                    #time.sleep(1)
-                    camera.wait_recording(t_record)
-                    blink_rec()
-                    camera.stop_preview()
-                    camera.close()  
-                    completed=1   
                 else:
                     print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                     camera.start_preview(fullscreen=True)
                     camera.start_recording(thisVideoFile)
-                    #time.sleep(1)
-                    camera.wait_recording(t_record)
-                    blink_rec()
-                    camera.stop_preview()
-                    camera.close()
-                    completed=1     
+
+            camera.wait_recording(t_preview)
+            blink_rec()
+            camera.wait_recording(t_record)
+            camera.stop_recording()
+            camera.close()
+            completed=1
                             
         except KeyboardInterrupt:
-                    print("terminando antes")
-                    i=cant
-                    camera.stop_preview()
-                    camera.stop_recording()
-                    camera.close()
-                    completed=1
+            print("terminando antes")
+            camera.stop_preview()
+            camera.stop_recording()
+            camera.close()
+            completed=1
+            break
 
         GPIO.cleanup()
         if(completed==1):
-            print("GRABAR EN: "+get_mount_points())
-            
+            #print("GRABAR EN: "+get_mount_points())           
             completed_video= os.path.join(get_mount_points(), thisVideoFile)
-            print("Camera stop recording")
+            #print("Camera stop recording")
             if(newVideo.modo_comprimir==1):
-                print("Beginning Convertion")
+                #print("Beginning Convertion")
                 command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
                 try:
                     output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
