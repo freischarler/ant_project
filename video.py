@@ -10,6 +10,8 @@ from picamera import PiCamera
 import time
 from datetime import datetime, date
 
+
+
 import RPi.GPIO as GPIO
 
 ErrorPin=13
@@ -151,6 +153,7 @@ def main():
     archivo.close()
     
     for _ in range(cant):
+        start=datetime.datetime.now()
         try:
             newVideo=Video()
             newVideo.cargar_default()
@@ -198,8 +201,9 @@ def main():
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                     camera.start_preview(fullscreen=True)
                     camera.start_recording(thisVideoFile)
-            camera.wait_recording(.2)
-            blink_rec()
+            while (datetime.datetime.now() - start).seconds < t_record: 
+                    camera.wait_recording(.5)
+                    blink_rec()
             camera.stop_recording()
             camera.close()
             completed=1
