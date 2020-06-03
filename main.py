@@ -3,6 +3,7 @@
 import sys
 import os
 
+
 import subprocess
 from subprocess import Popen, PIPE
 
@@ -20,6 +21,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 #from PyQt5.QtCore import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QAction
+
+import Adafruit_DHT
+# Set sensor type : Options are DHT11,DHT22 or AM2302
+sensor=Adafruit_DHT.DHT11
+ 
+# Set GPIO sensor is connected to
+temp_gpio=17
+uv_gpio=0
 
 
 	#-----------------------------
@@ -758,13 +767,15 @@ class Ui_MainWindow(QMainWindow):
         
         def hilo_sensado():
                 while (1):
+                        s_Temperatura, s_Humedad = Adafruit_DHT.read_retry(sensor, temp_gpio)
+
                         newfont = QtGui.QFont("Ubuntu", 36) 
                         acum=20+int((random()%2)*100)+1
                         temp = os.popen("vcgencmd measure_temp").readline()
                         temp =temp.partition("'C")
                         temp =temp[0].replace("temp=","")
-                        self.lb_temperatura.setText(temp) 
-                        self.lb_humedad.setText(str(acum*4))
+                        self.lb_temperatura.setText(s_Temperatura) 
+                        self.lb_humedad.setText(s_Humedad)
                         self.lb_luz.setText(str(acum*100))
                         self.lb_temperatura.setFont(newfont)
                         self.lb_humedad.setFont(newfont)
