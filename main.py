@@ -629,6 +629,9 @@ class Ui_MainWindow(QMainWindow):
     crop_h=1
     windows_posx=0
     windows_posy=0
+    s_Temperatura=""
+    s_Humedad=""
+    s_uv=""
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -707,8 +710,8 @@ class Ui_MainWindow(QMainWindow):
         self.actionConexion_configuracion.setObjectName("actionConexion_configuracion")
         self.actionRecord = QtWidgets.QAction(QIcon("play.png"), "Your button", self)
         self.actionRecord.setObjectName("actionRecord")
-        #self.actionactionStop = QtWidgets.QAction(QIcon("stop.png"), "Your button", self)
-        #self.actionactionStop.setObjectName("actionactionStop")
+        self.actionStop = QtWidgets.QAction(QIcon("stop.png"), "Your button", self)
+        self.actionStop.setObjectName("actionStop")
         self.actionConection = QtWidgets.QAction(QIcon("wifi.png"), "Your button", self)
         self.actionConection.setObjectName("actionConection")
         self.button_action = QAction(QIcon("bug.png"), "Your button", self)
@@ -757,30 +760,25 @@ class Ui_MainWindow(QMainWindow):
         self.menubar.addAction(self.menuBase_de_Datox.menuAction())
         self.menubar.addAction(self.menuAyuda.menuAction())
         self.toolBar.addAction(self.actionRecord)
-        #self.toolBar.addAction(self.actionactionStop)
+        self.toolBar.addAction(self.actionStop)
         self.toolBar.addAction(self.actionConection)
         self.toolBar.addAction(self.actionConfigurar)
-        #self.toolBar.addAction(self.actionConfiguration)
+        #elf.toolBar.addAction(self.actionConfiguration)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
         def hilo_sensado():
-                while (1):
+                while True:
                         s_Temperatura, s_Humedad = Adafruit_DHT.read_retry(sensor, temp_gpio)
-
-                        newfont = QtGui.QFont("Ubuntu", 36) 
-                        acum=20+int((random()%2)*100)+1
-                        temp = os.popen("vcgencmd measure_temp").readline()
-                        temp =temp.partition("'C")
-                        temp =temp[0].replace("temp=","")
-                        self.lb_temperatura.setText(s_Temperatura) 
-                        self.lb_humedad.setText(s_Humedad)
-                        self.lb_luz.setText(str(acum*100))
+                        newfont = QtGui.QFont("Ubuntu", 20)
+                        self.lb_temperatura.setText(str(s_Temperatura)+"°C")
+                        self.lb_humedad.setText(str(s_Humedad)+"%")
+                        self.lb_luz.setText(str(100))
                         self.lb_temperatura.setFont(newfont)
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
-                        time.sleep(3)
+                        time.sleep(2)
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
@@ -793,7 +791,7 @@ class Ui_MainWindow(QMainWindow):
         self.actionConection.triggered.connect(self.show_coneccion)
         self.actionPantalla_configuracion.triggered.connect(self.show_pantalla)
         self.actionConfigurar.triggered.connect(self.show_pantalla)
-        #self.actionactionStop.triggered.connect(self.detener_grabacion)
+        self.actionStop.triggered.connect(self.detener_grabacion)
         self.actionRecord.triggered.connect(self.grabar_video)
         self.actionGuardar_configuracion.triggered.connect(self.grabar_video)
         #self.actionConfiguration.triggered.connect(self.show_config)   
@@ -805,6 +803,11 @@ class Ui_MainWindow(QMainWindow):
     
     def salir(self):
             QCoreApplication.quit()
+
+    def detener_grabacion(self):
+            camera.stop_preview()
+            camera.stop_recording()
+            camera.close()
 
     def grabar_video(self):
         def hilo_grabar_video():
@@ -853,11 +856,11 @@ class Ui_MainWindow(QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "ANTVRecord"))
         self.t_temperatura.setText(_translate("MainWindow", "Temperatura:"))
-        self.lb_temperatura.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">15°</span></p></body></html>"))
+        self.lb_temperatura.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">0°</span></p></body></html>"))
         self.t_humedad.setText(_translate("MainWindow", "Humedad:"))
-        self.lb_humedad.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">69%</span></p></body></html>"))
+        self.lb_humedad.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">0</span></p></body></html>"))
         self.t_luz.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\">Luz:</p></body></html>"))
-        self.lb_luz.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">600 lux</span></p></body></html>"))
+        self.lb_luz.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">0</span></p></body></html>"))
         self.status_mainBar.setText(_translate("MainWindow", "<html><head/><body><p>Esperando una accion</p></body></html>"))
         self.label.setText(_translate("MainWindow", "Estado:"))
         self.menuSistema.setTitle(_translate("MainWindow", "Sistema"))
@@ -869,8 +872,8 @@ class Ui_MainWindow(QMainWindow):
         self.actionConexion.setText(_translate("MainWindow", "Conexion"))
         self.actionConexion_configuracion.setText(_translate("MainWindow", "Conectar"))
         self.actionRecord.setText(_translate("MainWindow", "Grabar"))
-        #self.actionactionStop.setText(_translate("MainWindow", "Parar"))
-        #self.actionactionStop.setEnabled(False)
+        self.actionStop.setText(_translate("MainWindow", "Parar"))
+        self.actionStop.setEnabled(True)
         self.actionConection.setText(_translate("MainWindow", "Conectar"))
         self.actionCargar_configuracion.setText(_translate("MainWindow", "Cargar configuracion"))
         self.actionConsultarBD.setText(_translate("MainWindow", "Consultar"))
