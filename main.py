@@ -24,10 +24,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QAc
 
 import Adafruit_DHT
 # Set sensor type : Options are DHT11,DHT22 or AM2302
-sensor=Adafruit_DHT.DHT11
+sensor=Adafruit_DHT.DHT22
  
 # Set GPIO sensor is connected to
-temp_gpio=17
+temp_gpio=20
 uv_gpio=0
 
 
