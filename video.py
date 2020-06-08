@@ -158,7 +158,7 @@ def main():
         try:
             newVideo=Video()
             newVideo.cargar_default()
-            t_record=(newVideo.duracion_grabacion)*1
+            t_record=(newVideo.duracion_grabacion)*60
             thisVideoFile=dstDir + newVideo.name + '.h264'
             camera=PiCamera()
             
