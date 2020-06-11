@@ -217,7 +217,6 @@ def main():
             completed=1
             break
 
-        GPIO.cleanup()
         if(completed==1):
             #print("GRABAR EN: "+get_mount_points())           
             completed_video= os.path.join(get_mount_points(), thisVideoFile)
@@ -229,6 +228,7 @@ def main():
                     output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
                 except subprocess.CalledProcessError as e:
                     print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+    GPIO.cleanup()
 
 if __name__ == "__main__":
     main()
