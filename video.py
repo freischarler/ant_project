@@ -195,7 +195,7 @@ def main():
                 if newVideo.modo_fullscreen==0:
                     print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
-                    camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(640/newVideo.resize),int(480/newVideo.resize)))
+                    camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(newVideo.windows_x/newVideo.resize),int(newVideo.windows_y/newVideo.resize)))
                     camera.start_recording(thisVideoFile)
                 else:
                     print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
