@@ -141,7 +141,7 @@ def main():
     setup()
     completed=0
     t_preview=2
-
+    roiX=roiY=roiW=roiH=0.0
     #make destination direcory
     dstDir = get_mount_points()  + '/'
     if not os.path.exists(dstDir):
@@ -168,7 +168,7 @@ def main():
                 print("MODO CROP: "+str(newVideo.crop_x)+str(newVideo.crop_y)+str(newVideo.crop_w)+str(newVideo.crop_h))
                 regionOfInterest = (float(newVideo.crop_x),float(newVideo.crop_y),float(newVideo.crop_w),float(newVideo.crop_h))
                 (roiX, roiY, roiW, roiH) = regionOfInterest
-                        
+                #(roiX2, roiY2, roiW2, roiH2)= regionOfInterest
                 width  = int(newVideo.windows_x)*roiW                     #Desired width
                 height = int(newVideo.windows_y)*roiH                    #Desired height
                         
@@ -178,17 +178,19 @@ def main():
 
                         #The sensor is automatically cropped to fit current aspect ratio 
                         #so we need to adjust zoom to take that into account
-                if (imageAspectRatio > sensorAspectRatio):    
-                    roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
-                    roiH = roiW                                  
+                #if (imageAspectRatio > sensorAspectRatio):    
+                #    roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
+                #    roiH = roiW                                  
                 
-                if (imageAspectRatio < sensorAspectRatio):   
-                    roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
-                    roiW = roiH 
+                #if (imageAspectRatio < sensorAspectRatio):   
+                #    roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
+                #    roiW = roiH 
                 
                 camera.resolution=(int(newVideo.windows_x),int(newVideo.windows_y))
                         
                 camera.zoom=(roiX,roiY,roiW,roiH)
+                #camera.zoom=(roiX2/int(newVideo.windows_x),roiY2/int(newVideo.windows_y),roiW2/int(newVideo.windows_x),roiH2/int(newVideo.windows_y))
+                #print("CROP DE ZOOM:"+str(roiX/())+"XXX"+str(roiY)+"XXX"+str(roiW)+"XXX"+str(roiH)+"XXX")
                 camera.start_preview()
                 camera.start_recording(thisVideoFile)
             else:

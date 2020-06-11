@@ -245,6 +245,8 @@ class Ui_ConfigurarPantalla(object):
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
+        self.crop_width.valueChanged.connect(self.mantener_cuadroX)
+        self.crop_height.valueChanged.connect(self.mantener_cuadroY)
         self.check_fullscreen.toggled.connect(self.fullscreen)
         self.pushButton.clicked.connect(self.preview_video)
         self.le_duracion.valueChanged.connect(self.actualizar)
@@ -448,12 +450,14 @@ class Ui_ConfigurarPantalla(object):
         w=self.crop_width.value()		
         if (x+w)>1:
             self.crop_width.setValue(1-x)
+        self.crop_height.setValue(self.crop_width.value())
 
     def mantener_cuadroY(self):
         y=self.crop_y.value()
-        w=self.crop_height.value()		
-        if (y+w)>1:
+        h=self.crop_height.value()		
+        if (y+h)>1:
             self.crop_height.setValue(1-y)  	
+        self.crop_width.setValue(self.crop_height.value())
 
 	#-----------------------------
 	#	PESTANIA de CROP
