@@ -21,6 +21,7 @@ RecLed=15
 class Video():
     crop_bool=0
     modo_fullscreen=1
+    modo_offscreen=0
     modo_comprimir=0
     windows_x=0
     windows_y=0
@@ -34,13 +35,42 @@ class Video():
     name="test"
     duracion_grabacion=0
 
+    f_actual="1/1/00"
+    h_actual="12:12"
+    tiempo_defecto="yes"
+    h_inicio="13:13"
+    duracion_grabacion=30
+    cantidad_videos=1
 
     def cargar_default(self):
         print("Load configuration...")
+        
+        try:
+            archivo = open("tiempo.txt")
+            self.f_actual=archivo.readline()
+            self.h_actual=archivo.readline()
+            self.tiempo_defecto=archivo.readline()
+            self.h_inicio=archivo.readline()
+            buffer=archivo.readline()
+            txt2 = hora_inicio.split(":")
+            self.duracion_grabacion=int(txt2[0])
+            self.cantidad_videos=archivo.readline()
+        except:
+            print("ERROR AL LEER TIEMPO.txt")
+            self.f_actual="1/1/00"
+            self.h_actual="12:12"
+            self.tiempo_defecto="yes"
+            self.h_inicio="00:00"
+            self.duracion_grabacion=30
+            self.cantidad_videos=12
+
+            txt = fecha_actual.split("/")
+            
+            inicio= datetime(int(txt[2]), int(txt[1]), int(txt[0]),int(txt2[0]),int(txt2[1]))
+
+
         try:
             archivo = open("grabacion.txt")
-            self.duracion_grabacion=int(float(archivo.readline()))
-            self.cantidad_videos=int(float(archivo.readline()))
             self.windows_x=archivo.readline()
             self.windows_y=archivo.readline()
             comprimir=archivo.readline()
@@ -49,23 +79,27 @@ class Video():
             archivo.close()
         except:
             print("ERROR AL LEER GRABACION.txt")
-            self.duracion_grabacion=5
-            self.cantidad_videos=1
             self.windows_x=640
             self.windows_y=480
 
         try:
             archivoRES = open("resolucion.txt")
-            txt_f=archivoRES.readline()
-            if(txt_f[0]=="y"): self.modo_fullscreen=1
+            txt_i=archivoRES.readline()
+            if(txt_f[0]=="y"): self.modo_offscreen=1
             else:
-                self.modo_fullscreen=0
-                self.windows_posx=int(archivoRES.readline())
-                self.windows_posy=int(archivoRES.readline())
-                self.resize=int(archivoRES.readline())      
+
+                txt_f=archivoRES.readline()
+                if(txt_f[0]=="y"): self.modo_fullscreen=1
+                else:
+                    self.modo_fullscreen=0
+                    self.windows_posx=int(archivoRES.readline())
+                    self.windows_posy=int(archivoRES.readline())
+                    self.resize=int(archivoRES.readline())      
             archivoRES.close()
         except:
             print("ERROR AL LEER RESOLUCION.txt")
+            self.modo_offscreen=0
+            self.modo_fullscreen=1
 
         try:
             archivo3=open("crop.txt")
@@ -152,6 +186,12 @@ def main():
     cant=int(float(archivo.readline()))
     cant=int(float(archivo.readline()))
     archivo.close()
+
+    
+    start=dt.datetime.now()
+    txt2 = self.hora_inicio.split(":")
+    inicio=dt.time(int(txt2[0]),int(txt2[1]))
+    while((dt.datetime.now() - start) < inicio)
     
     for _ in range(cant):
         start=dt.datetime.now()

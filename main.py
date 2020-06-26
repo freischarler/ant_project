@@ -10,21 +10,26 @@ from subprocess import Popen, PIPE
 import threading
 from random import random
 
-import picamera
-from picamera import PiCamera
+#import picamera
+#from picamera import PiCamera
 import time
 from time import sleep
-import datetime 
+
+
+import time
+from datetime import datetime, date, time, timedelta
+
+import datetime as dt 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 #from PyQt5.QtWidgets import *
-#from PyQt5.QtCore import *
+from PyQt5.QtCore import QDate, QTime, QDateTime, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QAction
 
-import Adafruit_DHT
+#import Adafruit_DHT
 # Set sensor type : Options are DHT11,DHT22 or AM2302
-sensor=Adafruit_DHT.DHT22
+#sensor=Adafruit_DHT.DHT22
  
 # Set GPIO sensor is connected to
 temp_gpio=20
@@ -42,49 +47,85 @@ class Ui_ConfigurarPantalla(object):
     resolucion_x=640
     resolucion_y=480
     comprimir="no"
+
+    f_actual="1/1/00"
+    h_actual="12:12"
+    tiempo_defecto="yes"
+    h_inicio="13:13"
+    h_fin="14:14"
+    cantidad_videos=1
+
+
+
     resize=1
     
-    
+
 
     def setupUi(self, Dialog):
-        
         Dialog.setObjectName("Dialog")
         Dialog.resize(640, 391)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
         self.buttonBox.setGeometry(QtCore.QRect(190, 350, 341, 32))
+        font = QtGui.QFont()
+        font.setKerning(True)
+        self.buttonBox.setFont(font)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.tabWidget = QtWidgets.QTabWidget(Dialog)
+        self.tabWidget.setEnabled(True)
         self.tabWidget.setGeometry(QtCore.QRect(20, 10, 601, 331))
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.tab)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(100, 20, 391, 241))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(80, 20, 211, 241))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label_9 = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_9.setObjectName("label_9")
+        self.horizontalLayout_3.addWidget(self.label_9)
+        self.le_fecha = QtWidgets.QDateEdit(self.verticalLayoutWidget)
+        self.le_fecha.setObjectName("le_fecha")
+        self.horizontalLayout_3.addWidget(self.le_fecha)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.label_14 = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_14.setObjectName("label_14")
+        self.horizontalLayout_7.addWidget(self.label_14)
+        self.le_hora = QtWidgets.QTimeEdit(self.verticalLayoutWidget)
+        self.le_hora.setObjectName("le_hora")
+        self.horizontalLayout_7.addWidget(self.le_hora)
+        self.verticalLayout.addLayout(self.horizontalLayout_7)
+        self.checkBox_tiempo = QtWidgets.QCheckBox(self.verticalLayoutWidget)
+        self.checkBox_tiempo.setObjectName("checkBox_tiempo")
+        self.verticalLayout.addWidget(self.checkBox_tiempo)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label_3 = QtWidgets.QLabel(self.verticalLayoutWidget)
         self.label_3.setObjectName("label_3")
-        self.horizontalLayout_3.addWidget(self.label_3)
+        self.horizontalLayout_2.addWidget(self.label_3)
         self.le_inicio = QtWidgets.QTimeEdit(self.verticalLayoutWidget)
         self.le_inicio.setObjectName("le_inicio")
-        self.horizontalLayout_3.addWidget(self.le_inicio)
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self.label_2 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout_5.addWidget(self.label_2)
-        self.le_duracion = QtWidgets.QDoubleSpinBox(self.verticalLayoutWidget)
-        self.le_duracion.setDecimals(0)
-        self.le_duracion.setObjectName("le_duracion")
-        self.horizontalLayout_5.addWidget(self.le_duracion)
-        self.verticalLayout.addLayout(self.horizontalLayout_5)
+        self.horizontalLayout_2.addWidget(self.le_inicio)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.label_6.setObjectName("label_6")
+        self.horizontalLayout_6.addWidget(self.label_6)
+        self.le_fin = QtWidgets.QDoubleSpinBox(self.verticalLayoutWidget)
+        self.le_fin.setDecimals(0)
+        self.le_fin.setMaximum(60)
+        self.le_fin.setMinimum(1)
+        self.le_fin.setObjectName("le_fin")
+        self.horizontalLayout_6.addWidget(self.le_fin)
+        self.verticalLayout.addLayout(self.horizontalLayout_6)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label_4 = QtWidgets.QLabel(self.verticalLayoutWidget)
@@ -95,28 +136,28 @@ class Ui_ConfigurarPantalla(object):
         self.le_cantidad.setObjectName("le_cantidad")
         self.horizontalLayout.addWidget(self.le_cantidad)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.label_6.setObjectName("label_6")
-        self.horizontalLayout_6.addWidget(self.label_6)
-        self.le_finalizacion = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.le_finalizacion.setObjectName("le_finalizacion")
-        self.horizontalLayout_6.addWidget(self.le_finalizacion)
-        self.verticalLayout.addLayout(self.horizontalLayout_6)
-        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.label_7 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.label_7.setObjectName("label_7")
-        self.horizontalLayout_7.addWidget(self.label_7)
-        self.qbox_resolucion = QtWidgets.QComboBox(self.verticalLayoutWidget)
-        self.qbox_resolucion.setObjectName("qbox_resolucion")
-        self.horizontalLayout_7.addWidget(self.qbox_resolucion)
-        self.checkBox_convertir = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.checkBox_convertir.setObjectName("checkBox_convertir")
-        self.horizontalLayout_7.addWidget(self.checkBox_convertir)
-        self.verticalLayout.addLayout(self.horizontalLayout_7)
+        self.label_21 = QtWidgets.QLabel(self.tab)
+        self.label_21.setGeometry(QtCore.QRect(310, 30, 241, 101))
+        self.label_21.setObjectName("label_21")
         self.tabWidget.addTab(self.tab, "")
+        self.Video = QtWidgets.QWidget()
+        self.Video.setObjectName("Video")
+        self.label_7 = QtWidgets.QLabel(self.Video)
+        self.label_7.setGeometry(QtCore.QRect(99, 40, 125, 33))
+        self.label_7.setObjectName("label_7")
+        self.qbox_resolucion = QtWidgets.QComboBox(self.Video)
+        self.qbox_resolucion.setGeometry(QtCore.QRect(230, 40, 124, 25))
+        self.qbox_resolucion.setObjectName("qbox_resolucion")
+        self.checkBox_convertir = QtWidgets.QCheckBox(self.Video)
+        self.checkBox_convertir.setGeometry(QtCore.QRect(100, 120, 311, 23))
+        self.checkBox_convertir.setObjectName("checkBox_convertir")
+        self.label_19 = QtWidgets.QLabel(self.Video)
+        self.label_19.setGeometry(QtCore.QRect(100, 160, 321, 17))
+        self.label_19.setObjectName("label_19")
+        self.label_20 = QtWidgets.QLabel(self.Video)
+        self.label_20.setGeometry(QtCore.QRect(100, 80, 441, 17))
+        self.label_20.setObjectName("label_20")
+        self.tabWidget.addTab(self.Video, "")
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
         self.line = QtWidgets.QFrame(self.tab_3)
@@ -125,41 +166,45 @@ class Ui_ConfigurarPantalla(object):
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.check_fullscreen = QtWidgets.QCheckBox(self.tab_3)
-        self.check_fullscreen.setGeometry(QtCore.QRect(120, 30, 161, 23))
+        self.check_fullscreen.setGeometry(QtCore.QRect(120, 50, 241, 23))
+        self.check_fullscreen.setChecked(True)
         self.check_fullscreen.setObjectName("check_fullscreen")
-        #self.check_fullscreen.setChecked(False)   
-        self.le_wx = QtWidgets.QDoubleSpinBox(self.tab_3)
-        self.le_wx.setDecimals(0)
-        self.le_wx.setMaximum(1920)
-        self.le_wx.setGeometry(QtCore.QRect(140, 110, 113, 25))
-        self.le_wx.setObjectName("le_wx")
-        #self.le_wx.setEnabled(True)
-        self.le_wy = QtWidgets.QDoubleSpinBox(self.tab_3)
-        self.le_wy.setDecimals(0)
-        self.le_wy.setMaximum(1080)
-        self.le_wy.setGeometry(QtCore.QRect(140, 140, 113, 25))
-        self.le_wy.setObjectName("le_wy")
-        #self.le_wy.setEnabled(True)
         self.label = QtWidgets.QLabel(self.tab_3)
-        self.label.setGeometry(QtCore.QRect(120, 110, 16, 17))
+        self.label.setGeometry(QtCore.QRect(120, 160, 16, 17))
         self.label.setObjectName("label")
         self.label_5 = QtWidgets.QLabel(self.tab_3)
-        self.label_5.setGeometry(QtCore.QRect(120, 140, 16, 17))
+        self.label_5.setGeometry(QtCore.QRect(120, 190, 16, 17))
         self.label_5.setObjectName("label_5")
         self.label_8 = QtWidgets.QLabel(self.tab_3)
-        self.label_8.setGeometry(QtCore.QRect(280, 110, 61, 21))
+        self.label_8.setGeometry(QtCore.QRect(280, 160, 71, 21))
         self.label_8.setObjectName("label_8")
         self.cbox_size = QtWidgets.QComboBox(self.tab_3)
-        self.cbox_size.setGeometry(QtCore.QRect(350, 110, 101, 25))
+        self.cbox_size.setGeometry(QtCore.QRect(360, 160, 101, 25))
+        self.cbox_size.setEditable(False)
         self.cbox_size.setObjectName("cbox_size")
         self.pushButton = QtWidgets.QPushButton(self.tab_3)
-        self.pushButton.setGeometry(QtCore.QRect(100, 210, 89, 25))
+        self.pushButton.setGeometry(QtCore.QRect(140, 230, 89, 25))
         self.pushButton.setObjectName("pushButton")
-        self.line_3 = QtWidgets.QFrame(self.tab_3)
-        self.line_3.setGeometry(QtCore.QRect(50, 180, 491, 16))
-        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_3.setObjectName("line_3")
+        self.check_visualizar = QtWidgets.QCheckBox(self.tab_3)
+        self.check_visualizar.setGeometry(QtCore.QRect(120, 20, 161, 23))
+        self.check_visualizar.setChecked(True)
+        self.check_visualizar.setObjectName("check_visualizar")
+        self.le_wx = QtWidgets.QSpinBox(self.tab_3)
+        self.le_wx.setGeometry(QtCore.QRect(140, 160, 111, 26))
+        self.le_wx.setMinimum(0)
+        self.le_wx.setMaximum(1920)
+        self.le_wx.setObjectName("le_wx")
+        self.le_wy = QtWidgets.QSpinBox(self.tab_3)
+        self.le_wy.setGeometry(QtCore.QRect(140, 190, 111, 26))
+        self.le_wy.setMinimum(0)
+        self.le_wy.setMaximum(1080)
+        self.le_wy.setObjectName("le_wy")
+        self.label_2 = QtWidgets.QLabel(self.tab_3)
+        self.label_2.setGeometry(QtCore.QRect(120, 130, 161, 17))
+        self.label_2.setObjectName("label_2")
+        self.label_18 = QtWidgets.QLabel(self.tab_3)
+        self.label_18.setGeometry(QtCore.QRect(120, 100, 131, 17))
+        self.label_18.setObjectName("label_18")
         self.tabWidget.addTab(self.tab_3, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -171,38 +216,38 @@ class Ui_ConfigurarPantalla(object):
         self.lb_image.setTextFormat(QtCore.Qt.PlainText)
         self.lb_image.setObjectName("lb_image")
         self.label_10 = QtWidgets.QLabel(self.tab_2)
-        self.label_10.setGeometry(QtCore.QRect(40, 30, 21, 17))
+        self.label_10.setGeometry(QtCore.QRect(10, 50, 51, 20))
         self.label_10.setObjectName("label_10")
         self.label_11 = QtWidgets.QLabel(self.tab_2)
-        self.label_11.setGeometry(QtCore.QRect(40, 70, 21, 17))
+        self.label_11.setGeometry(QtCore.QRect(10, 90, 51, 20))
         self.label_11.setObjectName("label_11")
         self.label_12 = QtWidgets.QLabel(self.tab_2)
-        self.label_12.setGeometry(QtCore.QRect(10, 110, 51, 17))
+        self.label_12.setGeometry(QtCore.QRect(10, 130, 51, 17))
         self.label_12.setObjectName("label_12")
         self.label_13 = QtWidgets.QLabel(self.tab_2)
-        self.label_13.setGeometry(QtCore.QRect(20, 150, 31, 17))
+        self.label_13.setGeometry(QtCore.QRect(20, 170, 41, 17))
         self.label_13.setObjectName("label_13")
         self.crop_x = QtWidgets.QDoubleSpinBox(self.tab_2)
-        self.crop_x.setGeometry(QtCore.QRect(70, 30, 69, 26))
+        self.crop_x.setGeometry(QtCore.QRect(70, 50, 69, 26))
         self.crop_x.setDecimals(2)
         self.crop_x.setMaximum(1.0)
         self.crop_x.setSingleStep(0.1)
         self.crop_x.setObjectName("crop_x")
         self.crop_y = QtWidgets.QDoubleSpinBox(self.tab_2)
-        self.crop_y.setGeometry(QtCore.QRect(70, 70, 69, 26))
+        self.crop_y.setGeometry(QtCore.QRect(70, 90, 69, 26))
         self.crop_y.setDecimals(2)
         self.crop_y.setMaximum(1.0)
         self.crop_y.setSingleStep(0.1)
         self.crop_y.setObjectName("crop_y")
         self.crop_width = QtWidgets.QDoubleSpinBox(self.tab_2)
-        self.crop_width.setGeometry(QtCore.QRect(70, 110, 69, 26))
+        self.crop_width.setGeometry(QtCore.QRect(70, 130, 69, 26))
         self.crop_width.setDecimals(2)
         self.crop_width.setMaximum(1.0)
         self.crop_width.setSingleStep(0.1)
         self.crop_width.setProperty("value", 1.0)
         self.crop_width.setObjectName("crop_width")
         self.crop_height = QtWidgets.QDoubleSpinBox(self.tab_2)
-        self.crop_height.setGeometry(QtCore.QRect(70, 150, 69, 26))
+        self.crop_height.setGeometry(QtCore.QRect(70, 170, 69, 26))
         self.crop_height.setDecimals(2)
         self.crop_height.setMaximum(1.0)
         self.crop_height.setSingleStep(0.1)
@@ -216,8 +261,16 @@ class Ui_ConfigurarPantalla(object):
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_2.setObjectName("line_2")
+        self.label_15 = QtWidgets.QLabel(self.tab_2)
+        self.label_15.setGeometry(QtCore.QRect(220, 10, 361, 20))
+        self.label_15.setObjectName("label_15")
+        self.label_16 = QtWidgets.QLabel(self.tab_2)
+        self.label_16.setGeometry(QtCore.QRect(200, 20, 21, 251))
+        self.label_16.setObjectName("label_16")
+        self.label_17 = QtWidgets.QLabel(self.tab_2)
+        self.label_17.setGeometry(QtCore.QRect(20, 10, 131, 17))
+        self.label_17.setObjectName("label_17")
         self.tabWidget.addTab(self.tab_2, "")
-
         #------------------------------------------------------
         # AGREGADO DE RESOLUCION Y RESIZE
         #------------------------------------------------------
@@ -233,62 +286,133 @@ class Ui_ConfigurarPantalla(object):
         
         self.retranslateUi(Dialog)
         self.tabWidget.setCurrentIndex(0)
+        self.qbox_resolucion.setCurrentIndex(-1)
         self.buttonBox.accepted.connect(Dialog.accept)
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+
         self.cargar_default()
         
 	#-----------------------------
 	#	INICIO DE FUNCIONES
 	#-----------------------------
-        self.qbox_resolucion.currentIndexChanged.connect(self.actualizar)
+        self.qbox_resolucion.currentIndexChanged.connect(self.actualizar_video)
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
         self.crop_width.valueChanged.connect(self.mantener_cuadroX)
         self.crop_height.valueChanged.connect(self.mantener_cuadroY)
+        self.check_visualizar.toggled.connect(self.visualizar)
         self.check_fullscreen.toggled.connect(self.fullscreen)
+
+        self.checkBox_tiempo.stateChanged.connect(self.tiempo_default)
+
         self.pushButton.clicked.connect(self.preview_video)
-        self.le_duracion.valueChanged.connect(self.actualizar)
-        self.le_cantidad.valueChanged.connect(self.actualizar)
-        self.checkBox_convertir.toggled.connect(self.actualizar)
+        self.le_fecha.dateTimeChanged.connect(self.update_time)
+
+
+        self.le_cantidad.valueChanged.connect(self.tiempo_default)
+        self.le_fin.valueChanged.connect(self.tiempo_default)
+
+        self.checkBox_convertir.toggled.connect(self.actualizar_video)
         self.le_wx.valueChanged.connect(self.actualizar_2)
         self.le_wy.valueChanged.connect(self.actualizar_2)
-        self.checkBox_convertir.toggled.connect(self.actualizar)
+
         self.cbox_size.currentIndexChanged.connect(self.actualizar_2)
         
 	#-----------------------------
 	#	PESTANIA de TIEMPO
 	#   Permite configurar el inicio,fin y resolucion del video
 	#-----------------------------
-	
+
+
+
+    def tiempo_default(self):
+        if self.checkBox_tiempo.isChecked():
+            self.le_cantidad.setValue(int(12))
+            self.le_fin.setValue(int(30))
+        txt=self.le_hora.time().toString()
+        txt = txt.split(":")
+        
+        
+        start = datetime(2000, 1, 1,int(txt[0]),(int(txt[1])))
+        delta = dt.timedelta(minutes = 1)
+        start = start + delta
+        self.le_inicio.setTime(QTime(start.hour,start.minute))
+
+        archivo=open("tiempo.txt", 'w')
+        archivo.write(str(self.f_actual)+"\n")
+        archivo.write(str(self.h_actual)+"\n")
+        archivo.write(str(self.tiempo_defecto)+"\n")
+        archivo.write(str(self.h_inicio)+"\n")
+        archivo.write(str(self.h_fin)+"\n")
+        archivo.write(str(self.cantidad_videos)+"\n")
+        archivo.close()
+
+
+
+    def update_time(self):
+        string_time1 = self.le_fecha.time().toString()
+        print (string_time1)
+        string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
+        print (string_time2)
+        date_chain = "\"" + string_time1 + " " + string_time2 + "\""
+        command = "sudo hwclock --set --date="
+        os.system (command + date_chain)
+        print(command + date_chain)
+
     def cargar_default(self):
         #CARGAMOS VALORES DE LA VENTANA DE TIEMPO
         try:
-            archivo=open("grabacion.txt")
-            self.duracion_grabacion=archivo.readline()
+            archivo=open("tiempo.txt")
+            self.f_actual=archivo.readline()
+            self.h_actual=archivo.readline()
+            self.tiempo_defecto=archivo.readline()
+            self.h_inicio=archivo.readline()
+            self.h_fin=archivo.readline()
             self.cantidad_videos=archivo.readline()
+            archivo.close()
+        except:
+            h_fin=6
+            cantidad_videos=1
+
+
+        if(self.tiempo_defecto[0]=="y"): 
+            self.checkBox_convertir.setChecked(True)            
+            txt = self.h_inicio.split(":")
+            #QTime time(txt[0], txt[1])
+            self.le_inicio.setTime(QTime(int(txt[0]),int(txt[1])))
+
+            start = datetime(2000, 1, 1,int(txt[0]),int(txt[1]))
+            delta = dt.timedelta(hours = 6)
+            end = start + delta
+            #self.le_fin.setTime(QTime(end.hour,end.minute))
+            self.le_fin.setValue(int(30))
+            self.le_cantidad.setValue(int(6))
+
+
+
+        try:
+            archivo=open("video.txt")
             self.resolucion_x=archivo.readline()
             self.resolucion_y=archivo.readline()
             self.comprimir=archivo.readline()
             archivo.close()
+
+            
         except:
-            duracion_grabacion=5
-            cantidad_videos=1
             resolucion_x=640
             resolucion_y=480
             comprimir="no"
             archivo=open("grabacion.txt", 'w')
-            archivo.write(str(self.duracion_grabacion)+"\n") 
-            archivo.write(str(self.cantidad_videos)+"\n")
             archivo.write(str(self.resolucion_x)+"\n")
             archivo.write(str(self.resolucion_y)+"\n")
             archivo.write(str(self.comprimir))
             archivo.close()
+
         if(self.comprimir[0]=="y"): 
             self.checkBox_convertir.setChecked(True)
-        self.le_cantidad.setValue(float(self.cantidad_videos))
-        self.le_duracion.setValue(float(self.duracion_grabacion))
 
                 ######################################
                 #CARGA RESOLUCION
@@ -301,7 +425,10 @@ class Ui_ConfigurarPantalla(object):
         if(self.resolucion_x[:2]=="12"): 
             self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1280x720"))
         if(self.resolucion_x[:2]=="64"): 
-            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("640x480"))
+            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("640x480"))    
+
+
+
             
         ######################################
         #CARGAMOS VALORES DE LA VENTANA VISUALIZACION
@@ -309,6 +436,7 @@ class Ui_ConfigurarPantalla(object):
 
         try:
             archivo=open("resolucion.txt")
+            txt_f=archivo.readline()
             txt_f=archivo.readline()
             if(txt_f[0]=="y"):
                 self.check_fullscreen.setChecked(True)
@@ -338,12 +466,8 @@ class Ui_ConfigurarPantalla(object):
             self.cbox_size.setEnabled(False) 
             archivo.close()
 
-
-
-    def actualizar(self):
-        f_inicio=self.le_inicio.text()
-        self.duracion_grabacion=self.le_duracion.value()
-        self.cantidad_videos=self.le_cantidad.value()     
+    def actualizar_video(self):
+        #self.cantidad_videos=self.le_cantidad.value()     
         index = self.qbox_resolucion.currentIndex()
         if(index==0): 
             self.resolucion_x=1920 
@@ -363,6 +487,11 @@ class Ui_ConfigurarPantalla(object):
         else:
             self.comprimir="no"
 
+    def actualizar(self):
+        f_inicio=self.le_inicio.text()
+
+
+
         t_total=int(self.duracion_grabacion*self.cantidad_videos)
         
         t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:]))
@@ -375,13 +504,16 @@ class Ui_ConfigurarPantalla(object):
             t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:])+int(t_total))
         tiempo_finalizacion=t
 
-        self.le_finalizacion.setText(str(t.hour)+':'+str(t.minute))
+        #self.le_finalizacion.setText(str(t.hour)+':'+str(t.minute))
         self.grabar_datos() #grabamos duracion y cantidad
 
     def grabar_datos(self):
         archivo = open("grabacion.txt",'w')
         archivo.write(str(self.duracion_grabacion)+"\n")
         archivo.write(str(self.cantidad_videos)+"\n")
+        archivo.close()
+
+        archivo = open("video.txt",'w')
         archivo.write(str(self.resolucion_x)+"\n")
         archivo.write(str(self.resolucion_y)+"\n")
         archivo.write(str(self.comprimir))
@@ -397,10 +529,11 @@ class Ui_ConfigurarPantalla(object):
         camera.resolution = (int(self.resolucion_x),int(self.resolucion_y))
         archivo = open("resolucion.txt")
         txt=archivo.readline()
+        txt=archivo.readline()
         if(self.check_fullscreen.isChecked()):
             camera.start_preview(fullscreen=True)
             archivo = open("resolucion.txt",'w')
-            archivo.write("yes"+"\n"+str(0)+"\n"+str(0))
+            archivo.write("yes"+"\n"+"yes"+"\n"+str(0)+"\n"+str(0))
             archivo.close()
         else:
             txt=self.le_wx.text()
@@ -409,7 +542,7 @@ class Ui_ConfigurarPantalla(object):
             archivo = open("resolucion.txt",'w')
             wx=self.le_wx.text()
             wy=self.le_wy.text()
-            archivo.write("no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
+            archivo.write("yes"+"\n""yes"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
         time.sleep(3)
@@ -421,8 +554,34 @@ class Ui_ConfigurarPantalla(object):
         wx=self.le_wx.text().replace('\n', ' ')
         wy=self.le_wy.text().replace('\n', ' ')
         size=str(self.cbox_size.currentIndex())
-        archivo.write("no"+"\n"+wx+"\n"+wy+size)
+        archivo.write("yes"+"\n""no"+"\n"+wx+"\n"+wy+size)
         archivo.close()
+
+
+    def visualizar(self):
+        if (self.check_visualizar.isChecked()):
+            self.check_fullscreen.setEnabled(True)
+            self.le_wx.setEnabled(True)
+            self.le_wy.setEnabled(True)
+            self.cbox_size.setEnabled(False)
+            archivo = open("resolucion.txt",'w')
+            self.resize=self.cbox_size.currentText()
+            archivo.write("yes"+"\n"+"no"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
+            archivo.close()       
+        else:
+            self.check_fullscreen.setEnabled(False)
+            self.le_wx.setEnabled(False)
+            self.le_wy.setEnabled(False)
+            self.cbox_size.setEnabled(False)
+            archivo = open("resolucion.txt",'w')
+            self.resize=self.cbox_size.currentText()
+            archivo.write("no"+"\n"+"yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
+            archivo.close()
+
+
+##############################
+#FALTA IMPLEMENTAR ESTE CODIGO 
+##############################
 
 
     def fullscreen(self):
@@ -437,7 +596,7 @@ class Ui_ConfigurarPantalla(object):
         
         archivo = open("resolucion.txt",'w')
         self.resize=self.cbox_size.currentText()
-        archivo.write("yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
+        archivo.write("yes"+"\n"+"yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
         archivo.close()   
 
 	#-----------------------------
@@ -522,26 +681,37 @@ class Ui_ConfigurarPantalla(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Configuracion de video y pantalla"))
-        self.label_3.setText(_translate("Dialog", "Inicio (hora):"))
-        self.label_2.setText(_translate("Dialog", "Duración (minutos):"))
+        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        self.label_9.setText(_translate("Dialog", "Fecha actual"))
+        self.label_14.setText(_translate("Dialog", "Hora actual"))
+        self.checkBox_tiempo.setText(_translate("Dialog", "Tiempo por defecto"))
+        self.label_3.setText(_translate("Dialog", "Inicio video (hora):"))
+        self.label_6.setText(_translate("Dialog", "Duracion (min):"))
         self.label_4.setText(_translate("Dialog", "Cantidad de videos:"))
-        self.label_6.setText(_translate("Dialog", "Finalización(hora):"))
-        self.le_finalizacion.setText(_translate("Dialog", "00:00"))
-        self.label_7.setText(_translate("Dialog", "Resolución"))
-        self.checkBox_convertir.setText(_translate("Dialog", "Convertir .mp4"))
+        self.label_21.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">*Tiempo por defecto: </span></p><p><span style=\" color:#2e3436;\">Graba video automaticamente</span></p><p><span style=\" color:#2e3436;\">Duración: 6 horas</span></p><p><span style=\" color:#2e3436;\">Tamaño de los videos: 30 minutos</span></p><p><span style=\" color:#2e3436;\">Total videos: 48</span></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Tiempo"))
-        self.check_fullscreen.setText(_translate("Dialog", "Fullscreen"))
+        self.label_7.setText(_translate("Dialog", "Resolución"))
+        self.checkBox_convertir.setText(_translate("Dialog", "Convertir video a *.mp4"))
+        self.label_19.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">(El video se graba en *.h264 por defecto)</span></p></body></html>"))
+        self.label_20.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">(Se recomienda 640 x 480 si se tiene poco espacio)</span></p></body></html>"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Video), _translate("Dialog", "Video"))
+        self.check_fullscreen.setText(_translate("Dialog", "Fullscreen (pantalla completa)"))
         self.label.setText(_translate("Dialog", "x"))
         self.label_5.setText(_translate("Dialog", "y"))
-        self.label_8.setText(_translate("Dialog", "Escala %"))
+        self.label_8.setText(_translate("Dialog", "Escalado "))
         self.pushButton.setText(_translate("Dialog", "Ver"))
+        self.check_visualizar.setText(_translate("Dialog", "Visualizar"))
+        self.label_2.setText(_translate("Dialog", "Posición del video"))
+        self.label_18.setText(_translate("Dialog", "<html><head/><body><p><span style=\" text-decoration: underline; color:#cc0000;\">Función avanzada</span></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("Dialog", "Visualizacion"))
-        self.label_10.setText(_translate("Dialog", "X"))
-        self.label_11.setText(_translate("Dialog", "Y"))
-        self.label_12.setText(_translate("Dialog", "Ancho"))
-        self.label_13.setText(_translate("Dialog", "Alto"))
+        self.label_10.setText(_translate("Dialog", "<html><head/><body><p align=\"right\">pos. X</p></body></html>"))
+        self.label_11.setText(_translate("Dialog", "<html><head/><body><p align=\"right\">pos. Y</p></body></html>"))
+        self.label_12.setText(_translate("Dialog", "<html><head/><body><p align=\"right\">Ancho</p></body></html>"))
+        self.label_13.setText(_translate("Dialog", "<html><head/><body><p align=\"right\">Alto</p></body></html>"))
         self.button_preview.setText(_translate("Dialog", "Ver"))
+        self.label_15.setText(_translate("Dialog", "0          .          .           .        0.5        .          .          .          1.0=X"))
+        self.label_16.setText(_translate("Dialog", "<html><head/><body><p align=\"center\">0 </p><p align=\"center\">. </p><p align=\"center\">. </p><p align=\"center\">. </p><p align=\"center\">0.5 </p><p align=\"center\">. </p><p align=\"center\">. </p><p align=\"center\">. </p><p align=\"center\">1.0<br/></p></body></html>"))
+        self.label_17.setText(_translate("Dialog", "<html><head/><body><p><span style=\" text-decoration: underline; color:#cc0000;\">Función avanzada</span></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Dialog", "Crop"))
 
 
