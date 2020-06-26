@@ -11,7 +11,8 @@ import time
 import datetime as dt
 from datetime import datetime, date
 
-
+import time
+from time import sleep
 
 import RPi.GPIO as GPIO
 
@@ -39,7 +40,7 @@ class Video():
     h_actual="12:12"
     tiempo_defecto="yes"
     h_inicio="13:13"
-    duracion_grabacion=30
+    duracion_grabacion=5
     cantidad_videos=1
 
     def cargar_default(self):
@@ -47,26 +48,24 @@ class Video():
         
         try:
             archivo = open("tiempo.txt")
-            self.f_actual=archivo.readline()
-            self.h_actual=archivo.readline()
-            self.tiempo_defecto=archivo.readline()
-            self.h_inicio=archivo.readline()
-            buffer=archivo.readline()
-            txt2 = hora_inicio.split(":")
-            self.duracion_grabacion=int(txt2[0])
-            self.cantidad_videos=archivo.readline()
+            self.f_actual=archivo.readline().replace('\n', '')
+            self.h_actual=archivo.readline().replace('\n', '')
+            self.tiempo_defecto=archivo.readline().replace('\n', '')
+            self.h_inicio=archivo.readline().replace('\n', '')
+            self.duracion_grabacion=int(archivo.readline().replace('\n', ''))
+            self.cantidad_videos=int(archivo.readline())
         except:
             print("ERROR AL LEER TIEMPO.txt")
             self.f_actual="1/1/00"
             self.h_actual="12:12"
             self.tiempo_defecto="yes"
             self.h_inicio="00:00"
-            self.duracion_grabacion=30
-            self.cantidad_videos=12
+            self.duracion_grabacion=5
+            self.cantidad_videos=1
 
-            txt = fecha_actual.split("/")
+            #txt = self.f_actual.split("/")
             
-            inicio= datetime(int(txt[2]), int(txt[1]), int(txt[0]),int(txt2[0]),int(txt2[1]))
+            #inicio= datetime(int(txt[2]), int(txt[1]), int(txt[0]),int(txt2[0]),int(txt2[1]))
 
 
         try:
@@ -81,20 +80,21 @@ class Video():
             print("ERROR AL LEER GRABACION.txt")
             self.windows_x=640
             self.windows_y=480
+            self.modo_comprimir=0
 
         try:
             archivoRES = open("resolucion.txt")
-            txt_i=archivoRES.readline()
-            if(txt_f[0]=="y"): self.modo_offscreen=1
-            else:
+            txt_i=archivoRES.readline().replace('\n', '')
 
-                txt_f=archivoRES.readline()
+            if(txt_i[0]=="y"): self.modo_offscreen=1
+            else:
+                txt_f=archivoRES.readline().replace('\n', '')
                 if(txt_f[0]=="y"): self.modo_fullscreen=1
                 else:
                     self.modo_fullscreen=0
                     self.windows_posx=int(archivoRES.readline())
                     self.windows_posy=int(archivoRES.readline())
-                    self.resize=int(archivoRES.readline())      
+                    self.resize=int(archivoRES.readline()) 
             archivoRES.close()
         except:
             print("ERROR AL LEER RESOLUCION.txt")
@@ -181,24 +181,46 @@ def main():
     if not os.path.exists(dstDir):
         os.makedirs(dstDir)
 
+
+
     #CANTIDAD DE VIDEOS
-    archivo = open("grabacion.txt")
-    cant=int(float(archivo.readline()))
+    archivo = open("tiempo.txt")
+    fecha_hoy=archivo.readline()
+    hora_hoy=archivo.readline()
+    buffer=archivo.readline()
+    hora_inicio=archivo.readline()
+    buffer=archivo.readline()
     cant=int(float(archivo.readline()))
     archivo.close()
 
+#1/1/00
+#12:12
+#00:00
+#2020-06-26 11:51:48.762234
+#11:26:00
+
+    hora_inicio="12:24"
     
     start=dt.datetime.now()
-    txt2 = self.hora_inicio.split(":")
-    inicio=dt.time(int(txt2[0]),int(txt2[1]))
-    while((dt.datetime.now() - start) < inicio)
+    
+    txt2 = hora_inicio.split(":")
+    inicio=dt.datetime.now()
+    inicio=inicio.replace(hour=int(txt2[0]), minute=int(txt2[1]))
+
+    print(dt.datetime.now())
+    print(start)
+    print(inicio)
+
+    sleep(3)
+    while(dt.datetime.now()<inicio):
+        sleep(1)
     
     for _ in range(cant):
         start=dt.datetime.now()
         try:
             newVideo=Video()
             newVideo.cargar_default()
-            t_record=(newVideo.duracion_grabacion)*60
+            t_record=(newVideo.duracion_grabacion)*1
             thisVideoFile=dstDir + newVideo.name + '.h264'
             camera=PiCamera()
             

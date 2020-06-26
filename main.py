@@ -10,8 +10,8 @@ from subprocess import Popen, PIPE
 import threading
 from random import random
 
-#import picamera
-#from picamera import PiCamera
+import picamera
+from picamera import PiCamera
 import time
 from time import sleep
 
@@ -545,7 +545,7 @@ class Ui_ConfigurarPantalla(object):
             archivo.write("yes"+"\n""yes"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
-        time.sleep(3)
+        sleep(3)
         camera.stop_preview()
         camera.close()
 
@@ -952,7 +952,7 @@ class Ui_MainWindow(QMainWindow):
                         self.lb_temperatura.setFont(newfont)
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
-                        time.sleep(2)
+                        sleep(2)
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
@@ -1004,7 +1004,7 @@ class Ui_MainWindow(QMainWindow):
         def hilo_grabar_sensor():
             while (1):
                 #SE GRABARIAN LOS DATOS
-                time.sleep(10)
+                sleep(10)
                 
 
         hilo1 = threading.Thread(target=hilo_grabar_video)
