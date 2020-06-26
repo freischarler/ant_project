@@ -27,9 +27,9 @@ from PyQt5.QtCore import QDate, QTime, QDateTime, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog, QPushButton, QAction
 
-#import Adafruit_DHT
+import Adafruit_DHT
 # Set sensor type : Options are DHT11,DHT22 or AM2302
-#sensor=Adafruit_DHT.DHT22
+sensor=Adafruit_DHT.DHT22
  
 # Set GPIO sensor is connected to
 temp_gpio=20
@@ -52,7 +52,7 @@ class Ui_ConfigurarPantalla(object):
     h_actual="12:12"
     tiempo_defecto="yes"
     h_inicio="13:13"
-    h_fin="14:14"
+    duracion_videos=15
     cantidad_videos=1
 
 
@@ -119,12 +119,12 @@ class Ui_ConfigurarPantalla(object):
         self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_6.addWidget(self.label_6)
-        self.le_fin = QtWidgets.QDoubleSpinBox(self.verticalLayoutWidget)
-        self.le_fin.setDecimals(0)
-        self.le_fin.setMaximum(60)
-        self.le_fin.setMinimum(1)
-        self.le_fin.setObjectName("le_fin")
-        self.horizontalLayout_6.addWidget(self.le_fin)
+        self.le_duracion = QtWidgets.QDoubleSpinBox(self.verticalLayoutWidget)
+        self.le_duracion.setDecimals(0)
+        self.le_duracion.setMaximum(60)
+        self.le_duracion.setMinimum(1)
+        self.le_duracion.setObjectName("le_duracion")
+        self.horizontalLayout_6.addWidget(self.le_duracion)
         self.verticalLayout.addLayout(self.horizontalLayout_6)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -303,7 +303,7 @@ class Ui_ConfigurarPantalla(object):
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
         self.crop_width.valueChanged.connect(self.mantener_cuadroX)
         self.crop_height.valueChanged.connect(self.mantener_cuadroY)
-        self.check_visualizar.toggled.connect(self.visualizar)
+        self.check_visualizar.toggled.connect(self.actualizar_visualizar)
         self.check_fullscreen.toggled.connect(self.fullscreen)
 
         self.checkBox_tiempo.stateChanged.connect(self.tiempo_default)
@@ -313,7 +313,7 @@ class Ui_ConfigurarPantalla(object):
 
 
         self.le_cantidad.valueChanged.connect(self.tiempo_default)
-        self.le_fin.valueChanged.connect(self.tiempo_default)
+        self.le_duracion.valueChanged.connect(self.tiempo_default)
 
         self.checkBox_convertir.toggled.connect(self.actualizar_video)
         self.le_wx.valueChanged.connect(self.actualizar_2)
@@ -331,7 +331,7 @@ class Ui_ConfigurarPantalla(object):
     def tiempo_default(self):
         if self.checkBox_tiempo.isChecked():
             self.le_cantidad.setValue(int(12))
-            self.le_fin.setValue(int(30))
+            self.le_duracion.setValue(int(30))
         txt=self.le_hora.time().toString()
         txt = txt.split(":")
         
@@ -344,9 +344,12 @@ class Ui_ConfigurarPantalla(object):
         archivo=open("tiempo.txt", 'w')
         archivo.write(str(self.f_actual)+"\n")
         archivo.write(str(self.h_actual)+"\n")
-        archivo.write(str(self.tiempo_defecto)+"\n")
+        if(self.checkBox_tiempo.isChecked()): 
+            archivo.write("yes"+"\n")
+        else:
+            archivo.write("no"+"\n")
         archivo.write(str(self.h_inicio)+"\n")
-        archivo.write(str(self.h_fin)+"\n")
+        archivo.write(str(self.duracion_videos)+"\n")
         archivo.write(str(self.cantidad_videos)+"\n")
         archivo.close()
 
@@ -370,11 +373,11 @@ class Ui_ConfigurarPantalla(object):
             self.h_actual=archivo.readline()
             self.tiempo_defecto=archivo.readline()
             self.h_inicio=archivo.readline()
-            self.h_fin=archivo.readline()
+            self.duracion_videos=archivo.readline()
             self.cantidad_videos=archivo.readline()
             archivo.close()
         except:
-            h_fin=6
+            duracion_videos=6
             cantidad_videos=1
 
 
@@ -387,8 +390,8 @@ class Ui_ConfigurarPantalla(object):
             start = datetime(2000, 1, 1,int(txt[0]),int(txt[1]))
             delta = dt.timedelta(hours = 6)
             end = start + delta
-            #self.le_fin.setTime(QTime(end.hour,end.minute))
-            self.le_fin.setValue(int(30))
+            #self.le_duracion.setTime(QTime(end.hour,end.minute))
+            self.le_duracion.setValue(int(30))
             self.le_cantidad.setValue(int(6))
 
 
@@ -486,6 +489,12 @@ class Ui_ConfigurarPantalla(object):
             self.comprimir="yes"
         else:
             self.comprimir="no"
+        
+        archivo = open("video.txt",'w')
+        archivo.write(str(self.resolucion_x)+"\n")
+        archivo.write(str(self.resolucion_y)+"\n")
+        archivo.write(str(self.comprimir))
+        archivo.close()
 
     def actualizar(self):
         f_inicio=self.le_inicio.text()
@@ -504,8 +513,10 @@ class Ui_ConfigurarPantalla(object):
             t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:])+int(t_total))
         tiempo_finalizacion=t
 
-        #self.le_finalizacion.setText(str(t.hour)+':'+str(t.minute))
+        #self.le_duracionalizacion.setText(str(t.hour)+':'+str(t.minute))
         self.grabar_datos() #grabamos duracion y cantidad
+
+
 
     def grabar_datos(self):
         archivo = open("grabacion.txt",'w')
@@ -513,11 +524,7 @@ class Ui_ConfigurarPantalla(object):
         archivo.write(str(self.cantidad_videos)+"\n")
         archivo.close()
 
-        archivo = open("video.txt",'w')
-        archivo.write(str(self.resolucion_x)+"\n")
-        archivo.write(str(self.resolucion_y)+"\n")
-        archivo.write(str(self.comprimir))
-        archivo.close()
+        
 
 	#-----------------------------
 	#	PESTANIA de PREVIEW_VIDEO
@@ -542,10 +549,10 @@ class Ui_ConfigurarPantalla(object):
             archivo = open("resolucion.txt",'w')
             wx=self.le_wx.text()
             wy=self.le_wy.text()
-            archivo.write("yes"+"\n""yes"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
+            archivo.write("yes"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
-        sleep(3)
+        time.sleep(3)
         camera.stop_preview()
         camera.close()
 
@@ -558,7 +565,7 @@ class Ui_ConfigurarPantalla(object):
         archivo.close()
 
 
-    def visualizar(self):
+    def actualizar_visualizar(self):
         if (self.check_visualizar.isChecked()):
             self.check_fullscreen.setEnabled(True)
             self.le_wx.setEnabled(True)
@@ -952,7 +959,7 @@ class Ui_MainWindow(QMainWindow):
                         self.lb_temperatura.setFont(newfont)
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
-                        sleep(2)
+                        time.sleep(2)
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
@@ -1004,7 +1011,7 @@ class Ui_MainWindow(QMainWindow):
         def hilo_grabar_sensor():
             while (1):
                 #SE GRABARIAN LOS DATOS
-                sleep(10)
+                time.sleep(10)
                 
 
         hilo1 = threading.Thread(target=hilo_grabar_video)
