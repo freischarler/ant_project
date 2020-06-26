@@ -310,10 +310,11 @@ class Ui_ConfigurarPantalla(object):
 
         self.pushButton.clicked.connect(self.preview_video)
         self.le_fecha.dateTimeChanged.connect(self.update_time)
+        self.le_inicio.dateTimeChanged.connect(self.tiempo_default)
 
 
-        self.le_cantidad.valueChanged.connect(self.tiempo_default)
         self.le_duracion.valueChanged.connect(self.tiempo_default)
+        self.le_cantidad.valueChanged.connect(self.tiempo_default)
 
         self.checkBox_convertir.toggled.connect(self.actualizar_video)
         self.le_wx.valueChanged.connect(self.actualizar_2)
@@ -332,15 +333,21 @@ class Ui_ConfigurarPantalla(object):
         if self.checkBox_tiempo.isChecked():
             self.le_cantidad.setValue(int(12))
             self.le_duracion.setValue(int(30))
-        txt=self.le_hora.time().toString()
-        txt = txt.split(":")
+            txt=self.le_hora.time().toString()
+            txt = txt.split(":")
+            start = datetime(2000, 1, 1,int(txt[0]),(int(txt[1])))
+            delta = dt.timedelta(minutes = 1)
+            start = start + delta
+            self.le_inicio.setTime(QTime(start.hour,start.minute))
         
-        
-        start = datetime(2000, 1, 1,int(txt[0]),(int(txt[1])))
-        delta = dt.timedelta(minutes = 1)
-        start = start + delta
-        self.le_inicio.setTime(QTime(start.hour,start.minute))
 
+
+
+        self.f_actual=self.le_fecha.text()
+        self.h_actual=self.le_hora.text()
+        self.duracion_videos=self.le_duracion.text()
+        self.cantidad_videos=self.le_cantidad.text()
+        self.h_inicio=self.le_inicio.text()
         archivo=open("tiempo.txt", 'w')
         archivo.write(str(self.f_actual)+"\n")
         archivo.write(str(self.h_actual)+"\n")
@@ -350,7 +357,7 @@ class Ui_ConfigurarPantalla(object):
             archivo.write("no"+"\n")
         archivo.write(str(self.h_inicio)+"\n")
         archivo.write(str(self.duracion_videos)+"\n")
-        archivo.write(str(self.cantidad_videos)+"\n")
+        archivo.write(str(self.cantidad_videos))
         archivo.close()
 
 
@@ -552,7 +559,7 @@ class Ui_ConfigurarPantalla(object):
             archivo.write("yes"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
-        time.sleep(3)
+        sleep(3)
         camera.stop_preview()
         camera.close()
 
@@ -959,7 +966,7 @@ class Ui_MainWindow(QMainWindow):
                         self.lb_temperatura.setFont(newfont)
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
-                        time.sleep(2)
+                        sleep(2)
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
@@ -1011,7 +1018,7 @@ class Ui_MainWindow(QMainWindow):
         def hilo_grabar_sensor():
             while (1):
                 #SE GRABARIAN LOS DATOS
-                time.sleep(10)
+                sleep(10)
                 
 
         hilo1 = threading.Thread(target=hilo_grabar_video)

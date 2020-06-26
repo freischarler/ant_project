@@ -193,23 +193,13 @@ def main():
     cant=int(float(archivo.readline()))
     archivo.close()
 
-#1/1/00
-#12:12
-#00:00
-#2020-06-26 11:51:48.762234
-#11:26:00
-
-    hora_inicio="12:24"
+    #hora_inicio="12:24"
     
     start=dt.datetime.now()
     
     txt2 = hora_inicio.split(":")
     inicio=dt.datetime.now()
     inicio=inicio.replace(hour=int(txt2[0]), minute=int(txt2[1]))
-
-    print(dt.datetime.now())
-    print(start)
-    print(inicio)
 
     sleep(3)
     while(dt.datetime.now()<inicio):
