@@ -69,7 +69,7 @@ class Video():
 
 
         try:
-            archivo = open("grabacion.txt")
+            archivo = open("video.txt")
             self.windows_x=archivo.readline()
             self.windows_y=archivo.readline()
             comprimir=archivo.readline()
