@@ -365,7 +365,8 @@ class Ui_ConfigurarPantalla(object):
     def update_time(self):
         string_time1 = self.le_fecha.time().toString()
         print (string_time1)
-        string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
+        string_time2=self.le_hora.time().toString()
+        #string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
         print (string_time2)
         date_chain = "\"" + string_time1 + " " + string_time2 + "\""
         command = "sudo hwclock --set --date="

@@ -243,18 +243,21 @@ def main():
                 camera.zoom=(roiX,roiY,roiW,roiH)
                 #camera.zoom=(roiX2/int(newVideo.windows_x),roiY2/int(newVideo.windows_y),roiW2/int(newVideo.windows_x),roiH2/int(newVideo.windows_y))
                 #print("CROP DE ZOOM:"+str(roiX/())+"XXX"+str(roiY)+"XXX"+str(roiW)+"XXX"+str(roiH)+"XXX")
-                camera.start_preview()
+                if(Video.modo_offscreen==0):
+                    camera.start_preview()
                 camera.start_recording(thisVideoFile)
             else:
                 if newVideo.modo_fullscreen==0:
                     print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
-                    camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(newVideo.windows_x/newVideo.resize),int(newVideo.windows_y/newVideo.resize)))
+                    if(Video.modo_offscreen==0):
+                        camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(newVideo.windows_x/newVideo.resize),int(newVideo.windows_y/newVideo.resize)))
                     camera.start_recording(thisVideoFile)
                 else:
                     print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
-                    camera.start_preview(fullscreen=True)
+                    if(Video.modo_offscreen==0):
+                        camera.start_preview(fullscreen=True)
                     camera.start_recording(thisVideoFile)
             while (dt.datetime.now() - start).seconds < t_record: 
                     camera.wait_recording(.5)
@@ -265,7 +268,8 @@ def main():
                             
         except KeyboardInterrupt:
             print("terminando antes")
-            camera.stop_preview()
+            if(Video.modo_offscreen==0):
+                camera.stop_preview()
             camera.stop_recording()
             camera.close()
             completed=1
