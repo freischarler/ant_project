@@ -11,3 +11,6 @@ cd /home/pi/sources
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git  
 cd Adafruit_Python_DHT  
 sudo python setup.py install 
+
+#para i2C
+sudo apt install python3-smbus

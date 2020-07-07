@@ -21,6 +21,8 @@ from datetime import datetime, date, time, timedelta
 
 import datetime as dt 
 
+import smbus #para i2c
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 #from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QDate, QTime, QDateTime, Qt
@@ -34,6 +36,24 @@ sensor=Adafruit_DHT.DHT22
 # Set GPIO sensor is connected to
 temp_gpio=20
 uv_gpio=0
+
+
+# Define some constants from the datasheet
+DEVICE     = 0x23 # Default device I2C address
+POWER_DOWN = 0x00 # No active state
+POWER_ON   = 0x01 # Power on
+RESET      = 0x07 # Reset data register value
+ONE_TIME_HIGH_RES_MODE = 0x20
+
+bus = smbus.SMBus(1)
+def convertToNumber(data):
+  # Simple function to convert 2 bytes of data
+  # into a decimal number
+	return ((data[1] + (256 * data[0])) / 1.2)
+
+def readLight(addr=DEVICE):
+	data = bus.read_i2c_block_data(addr,ONE_TIME_HIGH_RES_MODE)
+	return convertToNumber(data)
 
 
 	#-----------------------------
@@ -342,8 +362,8 @@ class Ui_ConfigurarPantalla(object):
         
 
 
-
-        self.f_actual=self.le_fecha.text()
+        
+        self.f_actual=self.le_fecha.date().toPyDate().strftime('%d/%m/%y')
         self.h_actual=self.le_hora.text()
         self.duracion_videos=self.le_duracion.text()
         self.cantidad_videos=self.le_cantidad.text()
@@ -363,7 +383,7 @@ class Ui_ConfigurarPantalla(object):
 
 
     def update_time(self):
-        string_time1 = self.le_fecha.time().toString()
+        string_time1 = self.le_fecha.date().toPyDate().strftime('%m/%d/%y')
         print (string_time1)
         string_time2=self.le_hora.time().toString()
         #string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
@@ -959,11 +979,14 @@ class Ui_MainWindow(QMainWindow):
         
         def hilo_sensado():
                 while True:
-                        s_Temperatura, s_Humedad = Adafruit_DHT.read_retry(sensor, temp_gpio)
+                        s_Luz=str(format(readLight(),'.2f'))
+                        s_Humedad, s_Temperatura = Adafruit_DHT.read_retry(sensor, temp_gpio)
+                        s_Temperatura=format(s_Temperatura, '.2f')
+                        s_Humedad=format(s_Humedad, '.2f')
                         newfont = QtGui.QFont("Ubuntu", 20)
                         self.lb_temperatura.setText(str(s_Temperatura)+"°C")
                         self.lb_humedad.setText(str(s_Humedad)+"%")
-                        self.lb_luz.setText(str(100))
+                        self.lb_luz.setText(s_Luz)
                         self.lb_temperatura.setFont(newfont)
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
