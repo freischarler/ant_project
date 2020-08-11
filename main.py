@@ -79,24 +79,7 @@ class Ui_ConfigurarPantalla(object):
 
     resize=1
     
-    def hilo_grabar_sensor():
-        while (1):
-                #SE GRABARIAN LOS DATOS
-                sleep(10)
-    def hilo_grabar_video():
-        try:
-                p=subprocess.Popen(args=["python3", "video.py"],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE)
-                stdout=p.communicate()
-                print(stdout)
-                    
-            except:
-                print("CANCELADO")
 
-
-    hilo1 = threading.Thread(target=hilo_grabar_video)
-    hilo2 = threading.Thread(target=hilo_grabar_sensor)
 
 
 
@@ -877,7 +860,24 @@ class Ui_MainWindow(QMainWindow):
     s_Humedad=""
     s_uv=""
 
-    
+    def hilo_grabar_sensor():
+        while (1):
+                #SE GRABARIAN LOS DATOS
+            sleep(10)
+    def hilo_grabar_video():
+        try:
+            p=subprocess.Popen(args=["python3", "video.py"],
+                    stdout=subprocess.PIPE,
+                    stdin=subprocess.PIPE)
+            stdout=p.communicate()
+            print(stdout)
+                    
+        except:
+            print("CANCELADO")
+
+
+    hilo1 = threading.Thread(target=hilo_grabar_video)
+    hilo2 = threading.Thread(target=hilo_grabar_sensor)    
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
