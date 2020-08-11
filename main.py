@@ -389,7 +389,7 @@ class Ui_ConfigurarPantalla(object):
         #string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
         print (string_time2)
         #date_chain = "\"" + string_time1 + " " + string_time2 + "\""
-	date_chain = "'" + string_time1 + " " + string_time2 + "'"
+	    date_chain = "'" + string_time1 + " " + string_time2 + "'"
         command = "sudo date --set "
 	#command = "sudo hwclock --set --date="
         #os.system (command + date_chain)
@@ -844,8 +844,7 @@ class Ui_MainWindow(QMainWindow):
     s_Humedad=""
     s_uv=""
 
-    hilo1 = threading.Thread(target=hilo_grabar_video)
-    hilo2 = threading.Thread(target=hilo_grabar_sensor)
+    
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -981,7 +980,38 @@ class Ui_MainWindow(QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        
+
+
+        def hilo_grabar_video():
+            newfont = QtGui.QFont("Ubuntu", 36) 
+            self.status_mainBar.setText("Grabando video")
+            self.lb_temperatura.setFont(newfont)
+            
+            try:
+                p=subprocess.Popen(args=["python3", "video.py"],
+                    stdout=subprocess.PIPE,
+                    stdin=subprocess.PIPE)
+                stdout=p.communicate()
+                print(stdout)
+                    
+            except:
+                print("CANCELADO")
+            
+            self.status_mainBar.setText("Esperando una accion")
+            self.lb_temperatura.setFont(newfont)
+
+        def hilo_grabar_sensor():
+            while (1):
+                #SE GRABARIAN LOS DATOS
+                sleep(10)
+
+
+
+
+
+        hilo1 = threading.Thread(target=hilo_grabar_video)
+        hilo2 = threading.Thread(target=hilo_grabar_sensor)
+
         def hilo_sensado():
                 while True:
                         s_Luz=str(format(readLight(),'.2f'))
@@ -1029,28 +1059,7 @@ class Ui_MainWindow(QMainWindow):
         if not this.hilo1.isAlive(): 
             print('thread killed') 
 
-    def hilo_grabar_video():
-        newfont = QtGui.QFont("Ubuntu", 36) 
-        self.status_mainBar.setText("Grabando video")
-        self.lb_temperatura.setFont(newfont)
-        
-        try:
-            p=subprocess.Popen(args=["python3", "video.py"],
-                stdout=subprocess.PIPE,
-                stdin=subprocess.PIPE)
-                stdout=p.communicate()
-                print(stdout)
-                
-        except:
-            print("CANCELADO")
-        
-        self.status_mainBar.setText("Esperando una accion")
-        self.lb_temperatura.setFont(newfont)
 
-    def hilo_grabar_sensor():
-        while (1):
-            #SE GRABARIAN LOS DATOS
-            sleep(10)
 
     def grabar_video(self):
         this.hilo1.start()
