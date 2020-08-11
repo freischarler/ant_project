@@ -1037,6 +1037,8 @@ class Ui_MainWindow(QMainWindow):
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
                         sleep(2)
+
+	print("hilo0 desactivado xq no hay sensores")
         #hilo0 = threading.Thread(target=hilo_sensado)
         #hilo0.start()
 
