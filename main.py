@@ -81,22 +81,6 @@ class Ui_ConfigurarPantalla(object):
     
 
 
-
-
-        #def hilo_grabar_video():
-        #    newfont = QtGui.QFont("Ubuntu", 36) 
-        ##    self.status_mainBar.setText("Grabando video")
-        #    self.lb_temperatura.setFont(newfont)
-            
-            
-            
-        #    self.status_mainBar.setText("Esperando una accion")
-        #    self.lb_temperatura.setFont(newfont)
-
-        #def hilo_grabar_sensor():
-            
-
-
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(640, 391)
@@ -405,10 +389,10 @@ class Ui_ConfigurarPantalla(object):
         #string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
         print (string_time2)
         #date_chain = "\"" + string_time1 + " " + string_time2 + "\""
-        date_chain = "'" + string_time1 + " " + string_time2 + "'"
+	date_chain = "'" + string_time1 + " " + string_time2 + "'"
         command = "sudo date --set "
 	#command = "sudo hwclock --set --date="
-        #os.system (command + date_chain)
+        os.system (command + date_chain)
         print(command + date_chain)
 
     def cargar_default(self):
@@ -860,25 +844,6 @@ class Ui_MainWindow(QMainWindow):
     s_Humedad=""
     s_uv=""
 
-    def hilo_grabar_sensor():
-        while (1):
-                #SE GRABARIAN LOS DATOS
-            sleep(10)
-    def hilo_grabar_video():
-        try:
-            p=subprocess.Popen(args=["python3", "video.py"],
-                    stdout=subprocess.PIPE,
-                    stdin=subprocess.PIPE)
-            stdout=p.communicate()
-            print(stdout)
-                    
-        except:
-            print("CANCELADO")
-
-
-    hilo1 = threading.Thread(target=hilo_grabar_video)
-    hilo2 = threading.Thread(target=hilo_grabar_sensor)    
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
@@ -1013,16 +978,7 @@ class Ui_MainWindow(QMainWindow):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-
         
-
-
-
-
-
-        
-
         def hilo_sensado():
                 while True:
                         s_Luz=str(format(readLight(),'.2f'))
@@ -1037,10 +993,8 @@ class Ui_MainWindow(QMainWindow):
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
                         sleep(2)
-
-	print("hilo0 desactivado xq no hay sensores")
-        #hilo0 = threading.Thread(target=hilo_sensado)
-        #hilo0.start()
+        hilo0 = threading.Thread(target=hilo_sensado)
+        hilo0.start()
 
         
         #----------------------------------------------------------
@@ -1065,16 +1019,36 @@ class Ui_MainWindow(QMainWindow):
             QCoreApplication.quit()
 
     def detener_grabacion(self):
-        hilo1.kill() 
-        hilo2.kill()
-        hilo1.join() 
-        hilo2.join()
-        if not hilo1.isAlive(): 
-            print('thread killed') 
-
-
+            camera.stop_preview()
+            camera.stop_recording()
+            camera.close()
 
     def grabar_video(self):
+        def hilo_grabar_video():
+            newfont = QtGui.QFont("Ubuntu", 36) 
+            self.status_mainBar.setText("Grabando video")
+            self.lb_temperatura.setFont(newfont)
+            try:
+                
+                p=subprocess.Popen(args=["python3", "video.py"],
+                            stdout=subprocess.PIPE,
+                            stdin=subprocess.PIPE)
+                stdout=p.communicate()
+                print(stdout)
+                
+            except:
+                print("CANCELADO")
+            self.status_mainBar.setText("Esperando una accion")
+            self.lb_temperatura.setFont(newfont)
+
+        def hilo_grabar_sensor():
+            while (1):
+                #SE GRABARIAN LOS DATOS
+                sleep(10)
+                
+
+        hilo1 = threading.Thread(target=hilo_grabar_video)
+        hilo2 = threading.Thread(target=hilo_grabar_sensor)
         hilo1.start()
         hilo2.start()
 
