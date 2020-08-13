@@ -225,8 +225,8 @@ def setup_video():
     roiX=roiY=roiW=roiH=0.0
     #make destination direcory
     #dstDir = get_mount_points()  + '/'
-    if not os.path.exists(dstDir):
-        os.makedirs(dstDir)
+    #if not os.path.exists(dstDir):
+    #    os.makedirs(dstDir)
 
 
 
@@ -602,6 +602,7 @@ class Ui_ConfigurarPantalla(object):
 
         self.pushButton.clicked.connect(self.preview_video)
         self.le_fecha.dateTimeChanged.connect(self.update_time)
+        self.le_hora.dateTimeChanged.connect(self.update_time)
         self.le_inicio.dateTimeChanged.connect(self.tiempo_default)
 
 
@@ -622,7 +623,6 @@ class Ui_ConfigurarPantalla(object):
 
 
     def tiempo_default(self):
-        self.update_time()
         if self.checkBox_tiempo.isChecked():
             self.le_cantidad.setValue(int(12))
             self.le_duracion.setValue(int(30))
@@ -659,7 +659,7 @@ class Ui_ConfigurarPantalla(object):
         #string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
         print (string_time2)
         #date_chain = "\"" + string_time1 + " " + string_time2 + "\""
-	    date_chain = "'20" + string_time1 + " " + string_time2 + "'"
+        date_chain = "'20" + string_time1 + " " + string_time2 + "'"
         command = "sudo date --set "
 	    #command = "sudo hwclock --set --date="
         #os.system (command + date_chain)

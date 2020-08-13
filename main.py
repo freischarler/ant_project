@@ -609,6 +609,7 @@ class Ui_ConfigurarPantalla(object):
 
         self.pushButton.clicked.connect(self.preview_video)
         self.le_fecha.dateTimeChanged.connect(self.update_time)
+        self.le_hora.dateTimeChanged.connect(self.update_time)
         self.le_inicio.dateTimeChanged.connect(self.tiempo_default)
 
 
@@ -629,7 +630,6 @@ class Ui_ConfigurarPantalla(object):
 
 
     def tiempo_default(self):
-        self.update_time()
         if self.checkBox_tiempo.isChecked():
             self.le_cantidad.setValue(int(12))
             self.le_duracion.setValue(int(30))
