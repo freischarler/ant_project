@@ -1,14 +1,18 @@
 # Ant Project
 
 ### CLONAR REPOSITORIO
-*Desde la Rpi abrir la consola y escribir:
+
+*Desde la Rpi abrir la consola y escribir:*
 ```
 cd Desktop
 git clone https://github.com/freischarler/ant_project
 ```
+*Nota: Luego de clonar debe instalar las librerias y dependencias, ir a la sección de requisitos !!! *
 
-*-El archivo AntP (dentro de ant_project) es una acceso directo, por lo tanto puede moverlo al escritorio y ejecuta la aplicacion*
-*-Para ejecutar la aplicacion internamente realizar:*
+### EJECUTAR LA APLICACION
+
+*El archivo AntP (dentro de ant_project) es una acceso directo, por lo tanto puede moverlo al escritorio y ejecuta la aplicacion*
+*Por otro lado, para ejecutar la aplicacion internamente realizar:*
 ```
 cd ant_project
 python3 main_original.py
