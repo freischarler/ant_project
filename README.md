@@ -8,13 +8,11 @@ sudo apt-get install python3-rpi.gpio
 sudo apt install python3-smbus
 ```
 
-Si se clono el repositorio entrar a la carpeta ant_project y ejecutar
+Si se clono el repositorio entrar a la carpeta ant_project y ejecutar. De otra manera realizar la instalacion de la libreria ADAFRUIT (pasos en LINK UTILES)
 ```
 cd Adafruit_Python_DHT  
 sudo python3 setup.py install 
 ```
-De otra manera realizar la instalacion de la libreria ADAFRUIT (pasos en LINK UTILES)
-
 
 ### HABILITAR I2C
 ```
