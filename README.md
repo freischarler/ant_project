@@ -1,4 +1,4 @@
-# ant_project
+# Ant Project
 
 ## REQUISITOS
 ### PASOS PARA EJECUTAR LA APLICACION
@@ -19,9 +19,12 @@ INTERFACE OPTIONS ---> SPI ---> yes
 
 ----------------------------------------------
 
-#LIBRERIA ADAFRUIT
+## REQUISITOS PARA DESARROLLAR
+### LIBRERIA ADAFRUIT
+```
 mkdir -p /home/pi/sources  
 cd /home/pi/sources  
 git clone https://github.com/adafruit/Adafruit_Python_DHT.git  
 cd Adafruit_Python_DHT  
 sudo python setup.py install 
+```
