@@ -1,5 +1,14 @@
 # Ant Project
 
+### CLONAR REPOSITORIO
+```
+cd Desktop
+git clone https://github.com/freischarler/ant_project
+cd ant_project 
+python3 main_original.py
+```
+*El archivo AntP (dentro de ant_project) es una acceso directo, por lo tanto puede moverlo al escritorio*
+
 ## REQUISITOS
 ### LIBRERIAS NECESARIAS
 ```
@@ -8,27 +17,18 @@ sudo apt-get install python3-rpi.gpio
 sudo apt install python3-smbus
 ```
 
-Si se clono el repositorio entrar a la carpeta ant_project y ejecutar. De otra manera realizar la instalacion de la libreria ADAFRUIT (pasos en LINK UTILES)
+Si se clono el repositorio entrar a la carpeta ant_project (cd Desktop/ant_project) y ejecutar:
 ```
 cd Adafruit_Python_DHT  
 sudo python3 setup.py install 
 ```
+*De otra manera realizar la instalacion de la libreria ADAFRUIT (pasos en LINK UTILES)*
 
 ### HABILITAR I2C
 ```
 sudo raspi-config 
 INTERFACE OPTIONS ---> SPI ---> yes
 ```
-
-### CLONAR REPOSITORIO
-```
-cd Desktop
-git clone https://github.com/freischarler/ant_project
-cd ant_project 
-python3 main_original.py
-```
-
-*El archivo AntP es una acceso directo, por lo tanto puede moverlo al escritorio*
 
 ---
 
