@@ -26,7 +26,7 @@ python3 main_original.py
 
 ----------------------------------------------
 
-## REQUISITOS PARA DESARROLLAR
+## LINKS UTILES PARA DESARROLLADORES
 ### LIBRERIA ADAFRUIT
 ```
 mkdir -p /home/pi/sources  
