@@ -28,7 +28,7 @@ cd ant_project
 python3 main_original.py
 ```
 
-*El archivo AntP es una acceso directo, por lo tanto puede moverlo al escritorio
+*El archivo AntP es una acceso directo, por lo tanto puede moverlo al escritorio*
 
 ---
 
