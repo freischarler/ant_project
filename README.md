@@ -28,7 +28,9 @@ cd ant_project
 python3 main_original.py
 ```
 
-----------------------------------------------
+*El archivo AntP es una acceso directo, por lo tanto puede moverlo al escritorio
+
+---
 
 ## LINKS UTILES PARA DESARROLLADORES
 ### LIBRERIA ADAFRUIT
@@ -40,9 +42,11 @@ cd Adafruit_Python_DHT
 sudo python setup.py install 
 ```
 
+---
+
 ## Contribuciones 
 
 * Cualquier consulta o mejora es bienvenida!
-
----
 ⌨️ [Martin Paz](https://github.com/freischarler) (martin.paz@live.com.ar) 
+---
+
