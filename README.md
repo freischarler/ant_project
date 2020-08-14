@@ -2,7 +2,7 @@
 
 ### CLONAR REPOSITORIO
 
-*Desde la Rpi abrir la consola y escribir:*
+*Desde la Rpi abrir la consola (Ctrl+Alt+T) y escribir:*
 ```
 cd Desktop
 git clone https://github.com/freischarler/ant_project
