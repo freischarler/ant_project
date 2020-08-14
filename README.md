@@ -7,7 +7,7 @@
 cd Desktop
 git clone https://github.com/freischarler/ant_project
 ```
-*Nota: Luego de clonar debe instalar las librerias y dependencias, ir a la sección de requisitos !!! *
+*Nota: Luego de clonar debe instalar las librerias y dependencias, ir a la sección de requisitos !!!*
 
 ### EJECUTAR LA APLICACION
 
