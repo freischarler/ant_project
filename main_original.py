@@ -1,5 +1,3 @@
-# Autor: Martin Omar Paz
-# v.001
 import sys
 import os
 
@@ -49,17 +47,17 @@ bus = smbus.SMBus(1)
 def convertToNumber(data):
   # Simple function to convert 2 bytes of data
   # into a decimal number
-	return ((data[1] + (256 * data[0])) / 1.2)
+    return ((data[1] + (256 * data[0])) / 1.2)
 
 def readLight(addr=DEVICE):
-	data = bus.read_i2c_block_data(addr,ONE_TIME_HIGH_RES_MODE)
-	return convertToNumber(data)
+    data = bus.read_i2c_block_data(addr,ONE_TIME_HIGH_RES_MODE)
+    return convertToNumber(data)
 
 
-	#-----------------------------
-	#	VENTANA DE CONFIGURACION DE PANTALLA
-	#-----------------------------
-	
+    #-----------------------------
+    #   VENTANA DE CONFIGURACION DE PANTALLA
+    #-----------------------------
+    
 class Ui_ConfigurarPantalla(object):
     tiempo_finalizacion=0
     duracion_grabacion=0
@@ -314,9 +312,9 @@ class Ui_ConfigurarPantalla(object):
 
         self.cargar_default()
         
-	#-----------------------------
-	#	INICIO DE FUNCIONES
-	#-----------------------------
+    #-----------------------------
+    #   INICIO DE FUNCIONES
+    #-----------------------------
         self.qbox_resolucion.currentIndexChanged.connect(self.actualizar_video)
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
@@ -330,6 +328,7 @@ class Ui_ConfigurarPantalla(object):
 
         self.pushButton.clicked.connect(self.preview_video)
         self.le_fecha.dateTimeChanged.connect(self.update_time)
+        self.le_hora.dateTimeChanged.connect(self.update_time)
         self.le_inicio.dateTimeChanged.connect(self.tiempo_default)
 
 
@@ -342,10 +341,10 @@ class Ui_ConfigurarPantalla(object):
 
         self.cbox_size.currentIndexChanged.connect(self.actualizar_2)
         
-	#-----------------------------
-	#	PESTANIA de TIEMPO
-	#   Permite configurar el inicio,fin y resolucion del video
-	#-----------------------------
+    #-----------------------------
+    #   PESTANIA de TIEMPO
+    #   Permite configurar el inicio,fin y resolucion del video
+    #-----------------------------
 
 
 
@@ -389,9 +388,9 @@ class Ui_ConfigurarPantalla(object):
         #string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
         print (string_time2)
         #date_chain = "\"" + string_time1 + " " + string_time2 + "\""
-	date_chain = "'" + string_time1 + " " + string_time2 + "'"
+        date_chain = "'20" + string_time1 + " " + string_time2 + "'"
         command = "sudo date --set "
-	#command = "sudo hwclock --set --date="
+    #command = "sudo hwclock --set --date="
         os.system (command + date_chain)
         print(command + date_chain)
 
@@ -556,10 +555,10 @@ class Ui_ConfigurarPantalla(object):
 
         
 
-	#-----------------------------
-	#	PESTANIA de PREVIEW_VIDEO
-	#   Permite acomodar el video en la pantalla o fullscreen
-	#-----------------------------
+    #-----------------------------
+    #   PESTANIA de PREVIEW_VIDEO
+    #   Permite acomodar el video en la pantalla o fullscreen
+    #-----------------------------
 
     def preview_video(self):
         camera=PiCamera()
@@ -567,10 +566,11 @@ class Ui_ConfigurarPantalla(object):
         archivo = open("resolucion.txt")
         txt=archivo.readline()
         txt=archivo.readline()
-        if(self.check_fullscreen.isChecked()):
+        print(str(self.check_fullscreen.isChecked()))
+        if(self.check_fullscreen.isChecked()==True):
             camera.start_preview(fullscreen=True)
             archivo = open("resolucion.txt",'w')
-            archivo.write("yes"+"\n"+"yes"+"\n"+str(0)+"\n"+str(0))
+            archivo.write("no"+"\n"+"yes"+"\n"+str(0)+"\n"+str(0))
             archivo.close()
         else:
             txt=self.le_wx.text()
@@ -579,7 +579,7 @@ class Ui_ConfigurarPantalla(object):
             archivo = open("resolucion.txt",'w')
             wx=self.le_wx.text()
             wy=self.le_wy.text()
-            archivo.write("yes"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
+            archivo.write("no"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
             archivo.close()   
             camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
         sleep(3)
@@ -633,32 +633,32 @@ class Ui_ConfigurarPantalla(object):
         
         archivo = open("resolucion.txt",'w')
         self.resize=self.cbox_size.currentText()
-        archivo.write("yes"+"\n"+"yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
+        archivo.write("no"+"\n"+"yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
         archivo.close()   
 
-	#-----------------------------
-	#	PESTANIA de Crop
-	#   Mantiene el cuadrado dentro de los limites
-	#-----------------------------
+    #-----------------------------
+    #   PESTANIA de Crop
+    #   Mantiene el cuadrado dentro de los limites
+    #-----------------------------
 
     def mantener_cuadroX(self):
         x=self.crop_x.value()
-        w=self.crop_width.value()		
+        w=self.crop_width.value()       
         if (x+w)>1:
             self.crop_width.setValue(1-x)
         self.crop_height.setValue(self.crop_width.value())
 
     def mantener_cuadroY(self):
         y=self.crop_y.value()
-        h=self.crop_height.value()		
+        h=self.crop_height.value()      
         if (y+h)>1:
-            self.crop_height.setValue(1-y)  	
+            self.crop_height.setValue(1-y)      
         self.crop_width.setValue(self.crop_height.value())
 
-	#-----------------------------
-	#	PESTANIA de CROP
-	#   Vista previa del crop
-	#-----------------------------
+    #-----------------------------
+    #   PESTANIA de CROP
+    #   Vista previa del crop
+    #-----------------------------
 
     def preview_image(self):
         camera=PiCamera()
@@ -667,7 +667,7 @@ class Ui_ConfigurarPantalla(object):
         #camera.stop_preview()
         camera.close()
         #camera.stop_recording()
-		
+        
         filename = "image.jpg"
         # convert image file into pixmap
         self.pixmap_image = QtGui.QPixmap(filename)
@@ -682,7 +682,7 @@ class Ui_ConfigurarPantalla(object):
         lbw=self.lb_image.width()
         lbh=self.lb_image.height()
         
-		# draw rectangle on painter
+        # draw rectangle on painter
         k1=k2=2
         if(int(self.resolucion_x)==1920): 
             k1=6
@@ -711,9 +711,9 @@ class Ui_ConfigurarPantalla(object):
         archivo.write(str(self.crop_x.value())+"\n"+str(self.crop_y.value())+"\n"+str(self.crop_width.value())+"\n"+str(self.crop_height.value()))
         archivo.close()
 
-	#-----------------------------
-	#	NOMBRE DE OBJETOS
-	#-----------------------------
+    #-----------------------------
+    #   NOMBRE DE OBJETOS
+    #-----------------------------
 
 
     def retranslateUi(self, Dialog):
@@ -993,8 +993,8 @@ class Ui_MainWindow(QMainWindow):
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
                         sleep(2)
-        hilo0 = threading.Thread(target=hilo_sensado)
-        hilo0.start()
+        #hilo0 = threading.Thread(target=hilo_sensado)
+        #hilo0.start()
 
         
         #----------------------------------------------------------
