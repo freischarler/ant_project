@@ -11,9 +11,7 @@ git clone https://github.com/freischarler/ant_project
 
 ### EJECUTAR LA APLICACION
 
-*El archivo AntP (dentro de ant_project) es una acceso directo, por lo tanto puede moverlo al escritorio y ejecuta la aplicacion*
-/-
-*Por otro lado, para ejecutar la aplicacion internamente realizar:*
+*El archivo AntP (dentro de ant_project) es una acceso directo, por lo tanto puede moverlo al escritorio y ejecuta la aplicacion. Otra opción es es realizar:*
 ```
 cd ant_project
 python3 main_original.py
