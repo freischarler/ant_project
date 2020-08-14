@@ -1,16 +1,20 @@
 # ant_project
 
 ## REQUISITOS
-### PASOS PARA EJECUTAR LA APLICACION:
+### PASOS PARA EJECUTAR LA APLICACION
+```
 sudo apt-get install python3-pyqt5
 sudo apt-get install python3-rpi.gpio
+sudo apt install python3-smbus
 cd Adafruit_Python_DHT  
 sudo python3 setup.py install 
+```
 
 ### HABILITAR I2C
-sudo apt install python3-smbus
+```
 sudo raspi-config 
 INTERFACE OPTIONS ---> SPI ---> yes
+```
 
 
 ----------------------------------------------
