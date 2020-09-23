@@ -426,7 +426,7 @@ class Ui_ConfigurarPantalla(object):
 
 
         try:
-            archivo=open("video.txt")
+            archivo=open("grabacion.txt")
             self.resolucion_x=archivo.readline()
             self.resolucion_y=archivo.readline()
             self.comprimir=archivo.readline()
