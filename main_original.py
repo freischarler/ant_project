@@ -981,7 +981,7 @@ class Ui_MainWindow(QMainWindow):
         
         def hilo_sensado():
                 while True:
-                        s_Luz=str(format(readLight(),'.2f'))
+                        #s_Luz=str(format(readLight(),'.2f'))
                         s_Humedad, s_Temperatura = Adafruit_DHT.read_retry(sensor, temp_gpio)
                         s_Temperatura=format(s_Temperatura, '.2f')
                         s_Humedad=format(s_Humedad, '.2f')
