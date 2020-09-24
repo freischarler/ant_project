@@ -993,8 +993,8 @@ class Ui_MainWindow(QMainWindow):
                         self.lb_humedad.setFont(newfont)
                         self.lb_luz.setFont(newfont)
                         sleep(2)
-        #hilo0 = threading.Thread(target=hilo_sensado)
-        #hilo0.start()
+        hilo0 = threading.Thread(target=hilo_sensado)
+        hilo0.start()
 
         
         #----------------------------------------------------------
