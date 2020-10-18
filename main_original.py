@@ -1001,7 +1001,7 @@ class Ui_MainWindow(QMainWindow):
                     formato="%Y%m%d-%H%M%S"
                     fecha=datetime.now()
                     name=fecha.strftime(formato)
-                    try
+                    try:
                         archivo = open('log_'+name,'a')
                     except:
                         archivo = open('log_'+name,'w')
