@@ -982,12 +982,7 @@ class Ui_MainWindow(QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
         def hilo_sensado():
-            dstDir = get_mount_points()  + '/'
-            if not os.path.exists(dstDir):
-                os.makedirs(dstDir)
-
             start=dt.datetime.now()
-            
 
             while True:
                 s_Luz=str(format(readLight(),'.2f'))
@@ -1015,7 +1010,7 @@ class Ui_MainWindow(QMainWindow):
                     start=dt.datetime.now()
 
                 sleep(2)
-                
+
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
