@@ -844,7 +844,7 @@ class Ui_MainWindow(QMainWindow):
     s_Humedad=""
     s_uv=""
     dstDir=""
-    t_record=1*60
+    t_record=10
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -997,15 +997,19 @@ class Ui_MainWindow(QMainWindow):
                 self.lb_humedad.setFont(newfont)
                 self.lb_luz.setFont(newfont)
 
-                if(dt.datetime.now() - start).seconds > t_record):
+                if((dt.datetime.now() - start).seconds > t_record):
                     formato="%Y%m%d-%H%M%S"
                     fecha=datetime.now()
                     name=fecha.strftime(formato)
-                    archivo = open('log_'+name,'a')
+                    try
+                        archivo = open('log_'+name,'a')
+                    except:
+                        archivo = open('log_'+name,'w')
                     archivo.write(str(s_Temperatura)+"\n")
                     archivo.write(str(s_Humedad)+"\n")
                     archivo.write(str(s_Luz)+"\n")
                     archivo.close()
+                    print('guardando sensados')
 
                     start=dt.datetime.now()
 
@@ -1014,21 +1018,6 @@ class Ui_MainWindow(QMainWindow):
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
-        def get_mount_points(devices=None):
-            devices = devices or get_usb_devices() # if devices are None: get_usb_devices
-            output = check_output(['mount']).splitlines()
-            output = [tmp.decode('UTF-8') for tmp in output]
-
-            def is_usb(path):
-                return any(dev in path for dev in devices)
-            usb_info=(line for line in output if is_usb(line.split()[0]))
-            #result=[(info.split()[0],info.split()[2]) for info in usb_info]
-            result=[(info.split()[2]) for info in usb_info]
-
-            if len(result):
-                return result.pop()
-            else:
-                print('CONECTE UN DISPOSITIVO USB PARA GRABAR!' )
 
         #----------------------------------------------------------
         #FUNCIONES DEL MENU
