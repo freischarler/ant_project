@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# Autor: Martin Omar Paz
+# v.001
 import sys
 import os
 
@@ -47,17 +50,17 @@ bus = smbus.SMBus(1)
 def convertToNumber(data):
   # Simple function to convert 2 bytes of data
   # into a decimal number
-    return ((data[1] + (256 * data[0])) / 1.2)
+	return ((data[1] + (256 * data[0])) / 1.2)
 
 def readLight(addr=DEVICE):
-    data = bus.read_i2c_block_data(addr,ONE_TIME_HIGH_RES_MODE)
-    return convertToNumber(data)
+	data = bus.read_i2c_block_data(addr,ONE_TIME_HIGH_RES_MODE)
+	return convertToNumber(data)
 
 
-    #-----------------------------
-    #   VENTANA DE CONFIGURACION DE PANTALLA
-    #-----------------------------
-    
+	#-----------------------------
+	#	VENTANA DE CONFIGURACION DE PANTALLA
+	#-----------------------------
+	
 class Ui_ConfigurarPantalla(object):
     tiempo_finalizacion=0
     duracion_grabacion=0
@@ -312,9 +315,9 @@ class Ui_ConfigurarPantalla(object):
 
         self.cargar_default()
         
-    #-----------------------------
-    #   INICIO DE FUNCIONES
-    #-----------------------------
+	#-----------------------------
+	#	INICIO DE FUNCIONES
+	#-----------------------------
         self.qbox_resolucion.currentIndexChanged.connect(self.actualizar_video)
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
@@ -341,10 +344,10 @@ class Ui_ConfigurarPantalla(object):
 
         self.cbox_size.currentIndexChanged.connect(self.actualizar_2)
         
-    #-----------------------------
-    #   PESTANIA de TIEMPO
-    #   Permite configurar el inicio,fin y resolucion del video
-    #-----------------------------
+	#-----------------------------
+	#	PESTANIA de TIEMPO
+	#   Permite configurar el inicio,fin y resolucion del video
+	#-----------------------------
 
 
 
@@ -388,9 +391,9 @@ class Ui_ConfigurarPantalla(object):
         #string_time2 = self.dateEdit.date().toPyDate().strftime('%m/%d/%y')
         print (string_time2)
         #date_chain = "\"" + string_time1 + " " + string_time2 + "\""
-        date_chain = "'20" + string_time1 + " " + string_time2 + "'"
+        date_chain = "'" + string_time1 + " " + string_time2 + "'"
         command = "sudo date --set "
-    #command = "sudo hwclock --set --date="
+	    #command = "sudo hwclock --set --date="
         os.system (command + date_chain)
         print(command + date_chain)
 
@@ -426,7 +429,7 @@ class Ui_ConfigurarPantalla(object):
 
 
         try:
-            archivo=open("grabacion.txt")
+            archivo=open("video.txt")
             self.resolucion_x=archivo.readline()
             self.resolucion_y=archivo.readline()
             self.comprimir=archivo.readline()
@@ -468,7 +471,7 @@ class Ui_ConfigurarPantalla(object):
 
         try:
             archivo=open("resolucion.txt")
-            txt_f=archivo.readline()
+            txt_v=archivo.readline()
             txt_f=archivo.readline()
             if(txt_f[0]=="y"):
                 self.check_fullscreen.setChecked(True)
@@ -555,10 +558,10 @@ class Ui_ConfigurarPantalla(object):
 
         
 
-    #-----------------------------
-    #   PESTANIA de PREVIEW_VIDEO
-    #   Permite acomodar el video en la pantalla o fullscreen
-    #-----------------------------
+	#-----------------------------
+	#	PESTANIA de PREVIEW_VIDEO
+	#   Permite acomodar el video en la pantalla o fullscreen
+	#-----------------------------
 
     def preview_video(self):
         camera=PiCamera()
@@ -566,8 +569,7 @@ class Ui_ConfigurarPantalla(object):
         archivo = open("resolucion.txt")
         txt=archivo.readline()
         txt=archivo.readline()
-        print(str(self.check_fullscreen.isChecked()))
-        if(self.check_fullscreen.isChecked()==True):
+        if(self.check_fullscreen.isChecked()):
             camera.start_preview(fullscreen=True)
             archivo = open("resolucion.txt",'w')
             archivo.write("no"+"\n"+"yes"+"\n"+str(0)+"\n"+str(0))
@@ -636,29 +638,29 @@ class Ui_ConfigurarPantalla(object):
         archivo.write("no"+"\n"+"yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
         archivo.close()   
 
-    #-----------------------------
-    #   PESTANIA de Crop
-    #   Mantiene el cuadrado dentro de los limites
-    #-----------------------------
+	#-----------------------------
+	#	PESTANIA de Crop
+	#   Mantiene el cuadrado dentro de los limites
+	#-----------------------------
 
     def mantener_cuadroX(self):
         x=self.crop_x.value()
-        w=self.crop_width.value()       
+        w=self.crop_width.value()		
         if (x+w)>1:
             self.crop_width.setValue(1-x)
         self.crop_height.setValue(self.crop_width.value())
 
     def mantener_cuadroY(self):
         y=self.crop_y.value()
-        h=self.crop_height.value()      
+        h=self.crop_height.value()		
         if (y+h)>1:
-            self.crop_height.setValue(1-y)      
+            self.crop_height.setValue(1-y)  	
         self.crop_width.setValue(self.crop_height.value())
 
-    #-----------------------------
-    #   PESTANIA de CROP
-    #   Vista previa del crop
-    #-----------------------------
+	#-----------------------------
+	#	PESTANIA de CROP
+	#   Vista previa del crop
+	#-----------------------------
 
     def preview_image(self):
         camera=PiCamera()
@@ -667,7 +669,7 @@ class Ui_ConfigurarPantalla(object):
         #camera.stop_preview()
         camera.close()
         #camera.stop_recording()
-        
+		
         filename = "image.jpg"
         # convert image file into pixmap
         self.pixmap_image = QtGui.QPixmap(filename)
@@ -682,7 +684,7 @@ class Ui_ConfigurarPantalla(object):
         lbw=self.lb_image.width()
         lbh=self.lb_image.height()
         
-        # draw rectangle on painter
+		# draw rectangle on painter
         k1=k2=2
         if(int(self.resolucion_x)==1920): 
             k1=6
@@ -711,9 +713,9 @@ class Ui_ConfigurarPantalla(object):
         archivo.write(str(self.crop_x.value())+"\n"+str(self.crop_y.value())+"\n"+str(self.crop_width.value())+"\n"+str(self.crop_height.value()))
         archivo.close()
 
-    #-----------------------------
-    #   NOMBRE DE OBJETOS
-    #-----------------------------
+	#-----------------------------
+	#	NOMBRE DE OBJETOS
+	#-----------------------------
 
 
     def retranslateUi(self, Dialog):
@@ -843,8 +845,6 @@ class Ui_MainWindow(QMainWindow):
     s_Temperatura=""
     s_Humedad=""
     s_uv=""
-    dstDir=""
-    t_record=1*60
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -982,59 +982,23 @@ class Ui_MainWindow(QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         
         def hilo_sensado():
-            dstDir = get_mount_points()  + '/'
-            if not os.path.exists(dstDir):
-                os.makedirs(dstDir)
-
-            start=dt.datetime.now()
-            
-
-            while True:
-                s_Luz=str(format(readLight(),'.2f'))
-                s_Humedad, s_Temperatura = Adafruit_DHT.read_retry(sensor, temp_gpio)
-                s_Temperatura=format(s_Temperatura, '.2f')
-                s_Humedad=format(s_Humedad, '.2f')
-                newfont = QtGui.QFont("Ubuntu", 20)
-                self.lb_temperatura.setText(str(s_Temperatura)+"°C")
-                self.lb_humedad.setText(str(s_Humedad)+"%")
-                self.lb_luz.setText(s_Luz)
-                self.lb_temperatura.setFont(newfont)
-                self.lb_humedad.setFont(newfont)
-                self.lb_luz.setFont(newfont)
-
-                if(dt.datetime.now() - start).seconds > t_record):
-                    formato="%Y%m%d-%H%M%S"
-                    fecha=datetime.now()
-                    name=fecha.strftime(formato)
-                    archivo = open('log_'+name,'a')
-                    archivo.write(str(s_Temperatura)+"\n")
-                    archivo.write(str(s_Humedad)+"\n")
-                    archivo.write(str(s_Luz)+"\n")
-                    archivo.close()
-
-                    start=dt.datetime.now()
-
-                sleep(2)
-                
+                while True:
+                        s_Luz=str(format(readLight(),'.2f'))
+                        s_Humedad, s_Temperatura = Adafruit_DHT.read_retry(sensor, temp_gpio)
+                        s_Temperatura=format(s_Temperatura, '.2f')
+                        s_Humedad=format(s_Humedad, '.2f')
+                        newfont = QtGui.QFont("Ubuntu", 20)
+                        self.lb_temperatura.setText(str(s_Temperatura)+"°C")
+                        self.lb_humedad.setText(str(s_Humedad)+"%")
+                        self.lb_luz.setText(s_Luz)
+                        self.lb_temperatura.setFont(newfont)
+                        self.lb_humedad.setFont(newfont)
+                        self.lb_luz.setFont(newfont)
+                        sleep(2)
         hilo0 = threading.Thread(target=hilo_sensado)
         hilo0.start()
 
-        def get_mount_points(devices=None):
-            devices = devices or get_usb_devices() # if devices are None: get_usb_devices
-            output = check_output(['mount']).splitlines()
-            output = [tmp.decode('UTF-8') for tmp in output]
-
-            def is_usb(path):
-                return any(dev in path for dev in devices)
-            usb_info=(line for line in output if is_usb(line.split()[0]))
-            #result=[(info.split()[0],info.split()[2]) for info in usb_info]
-            result=[(info.split()[2]) for info in usb_info]
-
-            if len(result):
-                return result.pop()
-            else:
-                print('CONECTE UN DISPOSITIVO USB PARA GRABAR!' )
-
+        
         #----------------------------------------------------------
         #FUNCIONES DEL MENU
         #----------------------------------------------------------
@@ -1064,7 +1028,7 @@ class Ui_MainWindow(QMainWindow):
     def grabar_video(self):
         def hilo_grabar_video():
             newfont = QtGui.QFont("Ubuntu", 36) 
-            self.status_mainBar.setText("Grabando video")
+            self.status_mainBar.setText("En proceso de grabar video")
             self.lb_temperatura.setFont(newfont)
             try:
                 
@@ -1081,7 +1045,6 @@ class Ui_MainWindow(QMainWindow):
 
         def hilo_grabar_sensor():
             while (1):
-
                 #SE GRABARIAN LOS DATOS
                 sleep(10)
                 
