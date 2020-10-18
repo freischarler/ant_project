@@ -844,7 +844,7 @@ class Ui_MainWindow(QMainWindow):
     s_Humedad=""
     s_uv=""
     dstDir=""
-    t_record=10
+
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -983,6 +983,7 @@ class Ui_MainWindow(QMainWindow):
         
         def hilo_sensado():
             start=dt.datetime.now()
+            t_record=15*60
 
             while True:
                 s_Luz=str(format(readLight(),'.2f'))
@@ -998,15 +999,15 @@ class Ui_MainWindow(QMainWindow):
                 self.lb_luz.setFont(newfont)
 
                 if((dt.datetime.now() - start).seconds > t_record):
-                    formato="%Y%m%d-%H%M%S"
+                    formato="%Y%m%d"
                     fecha=datetime.now()
                     name=fecha.strftime(formato)
                     try:
                         archivo = open('log_'+name,'a')
                     except:
                         archivo = open('log_'+name,'w')
-                    archivo.write(str(s_Temperatura)+"\n")
-                    archivo.write(str(s_Humedad)+"\n")
+                    archivo.write(str(s_Temperatura)+" ")
+                    archivo.write(str(s_Humedad)+" ")
                     archivo.write(str(s_Luz)+"\n")
                     archivo.close()
                     print('guardando sensados')
