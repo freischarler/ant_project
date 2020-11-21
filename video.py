@@ -74,10 +74,12 @@ class Video():
             print(str(self.windows_x))
             self.windows_y=archivo.readline().replace('\n', '')
             print(str(self.windows_y))
-            comprimir=archivo.readline().replace('\n', '')
+            comprimir=archivo.readline()
 
-            if(comprimir[0]=="y"): 
+            if(comprimir.find('y')==-1): 
                 self.modo_comprimir=1
+            else:
+                self.modo_comprimir=0
             print("Resolution: "+self.windows_x+self.windows_y)
             print("Comprimir: "+self.modo_comprimir)
             archivo.close()
@@ -85,7 +87,7 @@ class Video():
             print("ERROR AL LEER video.txt")
             self.windows_x=640
             self.windows_y=480
-            self.modo_comprimir=0
+            self.modo_comprimir=1
 
         try:
             archivoRES = open("resolucion.txt")
