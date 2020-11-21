@@ -71,7 +71,9 @@ class Video():
         try:
             archivo = open("video.txt")
             self.windows_x=archivo.readline().replace('\n', '')
+            print(str(self.windows_x))
             self.windows_y=archivo.readline().replace('\n', '')
+            print(str(self.windows_y))
             comprimir=archivo.readline().replace('\n', '')
 
             if(comprimir[0]=="y"): 
