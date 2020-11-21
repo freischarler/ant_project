@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=AntRecorder
+Comment=Desarrollo Martin Paz y Julian Sabattini (FCA-UNER)
+Icon=/home/pi/Desktop/ant_project/ant.png
+Exec=python3 "/home/pi/Desktop/ant_project/main_original.py"
+Path=/home/pi/Desktop/ant_project
+Type=Application
+Encoding=UTF-8
+Terminal=true
