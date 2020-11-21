@@ -1038,7 +1038,7 @@ class Ui_MainWindow(QMainWindow):
                 self.lb_luz.setFont(newfont)
 
                 if((dt.datetime.now() - start).seconds > t_record):
-  
+                    print(name)
                     try:
                         archivo = open(name,'a')
                     except:
