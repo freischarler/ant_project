@@ -4,7 +4,8 @@ from glob import glob
 
 
 import subprocess
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, check_output, CalledProcessError
+
 
 import threading
 from random import random
