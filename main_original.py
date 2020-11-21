@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+from glob import glob
 
 
 import subprocess
@@ -66,7 +67,7 @@ class Ui_ConfigurarPantalla(object):
     resolucion_y=480
     comprimir="no"
 
-    f_actual="1/1/00"
+    f_actual="Dia/Mes/Año"
     h_actual="12:12"
     tiempo_defecto="yes"
     h_inicio="13:13"
@@ -426,7 +427,7 @@ class Ui_ConfigurarPantalla(object):
 
 
         try:
-            archivo=open("grabacion.txt")
+            archivo=open("video.txt")
             self.resolucion_x=archivo.readline()
             self.resolucion_y=archivo.readline()
             self.comprimir=archivo.readline()
@@ -437,7 +438,7 @@ class Ui_ConfigurarPantalla(object):
             resolucion_x=640
             resolucion_y=480
             comprimir="no"
-            archivo=open("grabacion.txt", 'w')
+            archivo=open("video", 'w')
             archivo.write(str(self.resolucion_x)+"\n")
             archivo.write(str(self.resolucion_y)+"\n")
             archivo.write(str(self.comprimir))
@@ -719,18 +720,18 @@ class Ui_ConfigurarPantalla(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.label_9.setText(_translate("Dialog", "Fecha actual"))
-        self.label_14.setText(_translate("Dialog", "Hora actual"))
+        self.label_9.setText(_translate("Dialog", "Fecha actual (DIA/MES/AÑO)"))
+        self.label_14.setText(_translate("Dialog", "Hora actual (HH:MM)"))
         self.checkBox_tiempo.setText(_translate("Dialog", "Tiempo por defecto"))
-        self.label_3.setText(_translate("Dialog", "Inicio video (hora):"))
-        self.label_6.setText(_translate("Dialog", "Duracion (min):"))
-        self.label_4.setText(_translate("Dialog", "Cantidad de videos:"))
+        self.label_3.setText(_translate("Dialog", "Inicio video: (HH:MM)"))
+        self.label_6.setText(_translate("Dialog", "Duracion: (min)"))
+        self.label_4.setText(_translate("Dialog", "Cantidad de videos: (num)"))
         self.label_21.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">*Tiempo por defecto: </span></p><p><span style=\" color:#2e3436;\">Graba video automaticamente</span></p><p><span style=\" color:#2e3436;\">Duración: 6 horas</span></p><p><span style=\" color:#2e3436;\">Tamaño de los videos: 30 minutos</span></p><p><span style=\" color:#2e3436;\">Total videos: 48</span></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Tiempo"))
         self.label_7.setText(_translate("Dialog", "Resolución"))
-        self.checkBox_convertir.setText(_translate("Dialog", "Convertir video a *.mp4"))
-        self.label_19.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">(El video se graba en *.h264 por defecto)</span></p></body></html>"))
-        self.label_20.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">(Se recomienda 640 x 480 si se tiene poco espacio)</span></p></body></html>"))
+        self.checkBox_convertir.setText(_translate("Dialog", "Convertir video a formato *.mp4"))
+        self.label_19.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">(Por defecto, el video será grabado en *.h264)</span></p></body></html>"))
+        self.label_20.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">(Se recomienda la resolución 640x480 si cuenta con un USB de poco espacio)</span></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Video), _translate("Dialog", "Video"))
         self.check_fullscreen.setText(_translate("Dialog", "Fullscreen (pantalla completa)"))
         self.label.setText(_translate("Dialog", "x"))
@@ -983,13 +984,50 @@ class Ui_MainWindow(QMainWindow):
         
         def hilo_sensado():
             start=dt.datetime.now()
-            t_record=15*60
+            t_record=5
+
+            # DISPOSITIVOS USB
+
+            def get_usb_devices():
+                sdb_devices = map(os.path.realpath, glob('/sys/block/sd*'))
+                usb_devices = (dev for dev in sdb_devices
+                if 'usb' in dev.split('/')[5])
+                return dict((os.path.basename(dev), dev) for dev in usb_devices)
+
+            # DIRECCION DEL USB
+
+            def get_mount_points(devices=None):
+                devices = devices or get_usb_devices() # if devices are None: get_usb_devices
+                output = check_output(['mount']).splitlines()
+                output = [tmp.decode('UTF-8') for tmp in output]
+
+                def is_usb(path):
+                    return any(dev in path for dev in devices)
+                usb_info=(line for line in output if is_usb(line.split()[0]))
+                #result=[(info.split()[0],info.split()[2]) for info in usb_info]
+                result=[(info.split()[2]) for info in usb_info]
+                
+                if len(result):
+                    return result.pop()
+                else:
+                    print('CONECTE UN DISPOSITIVO USB PARA GRABAR!' )
+                    blink_error()
+
+            formato="%Y%m%d"
+            formato_2="%Y%m%d-%H%M%S"
+            
+            fecha=datetime.now()
+            name='log_'+fecha.strftime(formato)+'.txt'
+            
+            dstDir = get_mount_points()  + '/'
+            thisLogFile=dstDir + name
+
 
             while True:
-                s_Luz=str(format(readLight(),'.2f'))
+                s_Luz=str(format(readLight(),'.3f'))
                 s_Humedad, s_Temperatura = Adafruit_DHT.read_retry(sensor, temp_gpio)
-                s_Temperatura=format(s_Temperatura, '.2f')
-                s_Humedad=format(s_Humedad, '.2f')
+                s_Temperatura=format(s_Temperatura, '.3f')
+                s_Humedad=format(s_Humedad, '.3f')
                 newfont = QtGui.QFont("Ubuntu", 20)
                 self.lb_temperatura.setText(str(s_Temperatura)+"°C")
                 self.lb_humedad.setText(str(s_Humedad)+"%")
@@ -999,17 +1037,21 @@ class Ui_MainWindow(QMainWindow):
                 self.lb_luz.setFont(newfont)
 
                 if((dt.datetime.now() - start).seconds > t_record):
-                    formato="%Y%m%d"
-                    fecha=datetime.now()
-                    name=fecha.strftime(formato)
+  
                     try:
-                        archivo = open('log_'+name,'a')
+                        archivo = open(name,'a')
                     except:
-                        archivo = open('log_'+name,'w')
+                        archivo = open(name,'w')
+
                     archivo.write(str(s_Temperatura)+" ")
                     archivo.write(str(s_Humedad)+" ")
+                    archivo.write(str(fecha.strftime(formato_2))+" ")
                     archivo.write(str(s_Luz)+"\n")
                     archivo.close()
+
+                    
+                    completed_video=os.path.join(get_mount_points(), thisLogFile)
+
                     print('guardando sensados')
 
                     start=dt.datetime.now()
@@ -1068,7 +1110,7 @@ class Ui_MainWindow(QMainWindow):
             while (1):
 
                 #SE GRABARIAN LOS DATOS
-                sleep(10)
+                sleep(5)
                 
 
         hilo1 = threading.Thread(target=hilo_grabar_video)
@@ -1092,10 +1134,10 @@ class Ui_MainWindow(QMainWindow):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "ANTVRecord"))
-        self.t_temperatura.setText(_translate("MainWindow", "Temperatura:"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Ant Video Record (ANTVRecord)"))
+        self.t_temperatura.setText(_translate("MainWindow", "Temperatura (°C):"))
         self.lb_temperatura.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">0°</span></p></body></html>"))
-        self.t_humedad.setText(_translate("MainWindow", "Humedad:"))
+        self.t_humedad.setText(_translate("MainWindow", "Humedad (%):"))
         self.lb_humedad.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">0</span></p></body></html>"))
         self.t_luz.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\">Luz:</p></body></html>"))
         self.lb_luz.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">0</span></p></body></html>"))

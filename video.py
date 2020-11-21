@@ -70,14 +70,17 @@ class Video():
 
         try:
             archivo = open("video.txt")
-            self.windows_x=archivo.readline()
-            self.windows_y=archivo.readline()
-            comprimir=archivo.readline()
-            if(comprimir[0]=="y"): self.modo_comprimir=1
+            self.windows_x=archivo.readline().replace('\n', '')
+            self.windows_y=archivo.readline().replace('\n', '')
+            comprimir=archivo.readline().replace('\n', '')
+
+            if(comprimir[0]=="y"): 
+                self.modo_comprimir=1
             print("Resolution: "+self.windows_x+self.windows_y)
+            print("Comprimir: "+self.modo_comprimir)
             archivo.close()
         except:
-            print("ERROR AL LEER GRABACION.txt")
+            print("ERROR AL LEER video.txt")
             self.windows_x=640
             self.windows_y=480
             self.modo_comprimir=0
@@ -277,7 +280,7 @@ def main():
 
         if(completed==1):
             #print("GRABAR EN: "+get_mount_points())           
-            completed_video= os.path.join(get_mount_points(), thisVideoFile)
+            completed_video=os.path.join(get_mount_points(), thisVideoFile)
             #print("Camera stop recording")
             if(newVideo.modo_comprimir==1):
                 #print("Beginning Convertion")
