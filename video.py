@@ -93,10 +93,10 @@ class Video():
             archivoRES = open("resolucion.txt")
             txt_i=archivoRES.readline().replace('\n', '')
 
-            if(txt_i[0]=="y"): self.modo_offscreen=1
+            if(txt_i.find('y')==-1): self.modo_offscreen=1
             else:
                 txt_f=archivoRES.readline().replace('\n', '')
-                if(txt_f[0]=="y"): self.modo_fullscreen=1
+                if(txt_f.find('y')==-1): self.modo_fullscreen=1
                 else:
                     self.modo_fullscreen=0
                     self.windows_posx=int(archivoRES.readline())
