@@ -23,6 +23,7 @@ python3 main_original.py
 sudo apt-get install python3-pyqt5
 sudo apt-get install python3-rpi.gpio
 sudo apt install python3-smbus
+sudo apt-get install gpac
 ```
 
 Si se clono el repositorio entrar a la carpeta ant_project (cd Desktop/ant_project) y ejecutar:
