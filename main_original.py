@@ -429,16 +429,16 @@ class Ui_ConfigurarPantalla(object):
 
         try:
             archivo=open("video.txt")
-            self.resolucion_x=archivo.readline().replace('\n', ''))
-            self.resolucion_y=archivo.readline().replace('\n', ''))
+            self.resolucion_x=int(archivo.readline().replace('\n', '')))
+            self.resolucion_y=int(archivo.readline().replace('\n', '')))
             self.comprimir=archivo.readline().replace('\n', ''))
             archivo.close()
 
             
         except:
-            resolucion_x=640
-            resolucion_y=480
-            comprimir="no"
+            self.resolucion_x=640
+            self.resolucion_y=480
+            self.comprimir="yes"
             archivo=open("video", 'w')
             archivo.write(str(self.resolucion_x)+"\n")
             archivo.write(str(self.resolucion_y)+"\n")
