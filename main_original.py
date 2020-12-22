@@ -429,9 +429,9 @@ class Ui_ConfigurarPantalla(object):
 
         try:
             archivo=open("video.txt")
-            self.resolucion_x=archivo.readline()
-            self.resolucion_y=archivo.readline()
-            self.comprimir=archivo.readline()
+            self.resolucion_x=archivo.readline().replace('\n', ''))
+            self.resolucion_y=archivo.readline().replace('\n', ''))
+            self.comprimir=archivo.readline().replace('\n', ''))
             archivo.close()
 
             
@@ -1012,7 +1012,6 @@ class Ui_MainWindow(QMainWindow):
                     return result.pop()
                 else:
                     print('CONECTE UN DISPOSITIVO USB PARA GRABAR!' )
-                    blink_error()
 
             formato="%Y%m%d"
             formato_2="%Y%m%d-%H%M%S"
@@ -1025,10 +1024,10 @@ class Ui_MainWindow(QMainWindow):
 
 
             while True:
-                s_Luz=str(format(readLight(),'.3f'))
+                s_Luz=str(format(readLight(),'.2f'))
                 s_Humedad, s_Temperatura = Adafruit_DHT.read_retry(sensor, temp_gpio)
-                s_Temperatura=format(s_Temperatura, '.3f')
-                s_Humedad=format(s_Humedad, '.3f')
+                s_Temperatura=format(s_Temperatura, '.2f')
+                s_Humedad=format(s_Humedad, '.2f')
                 newfont = QtGui.QFont("Ubuntu", 20)
                 self.lb_temperatura.setText(str(s_Temperatura)+"°C")
                 self.lb_humedad.setText(str(s_Humedad)+"%")
@@ -1046,14 +1045,12 @@ class Ui_MainWindow(QMainWindow):
 
                     archivo.write(str(s_Temperatura)+" ")
                     archivo.write(str(s_Humedad)+" ")
-                    archivo.write(str(fecha.strftime(formato_2))+" ")
-                    archivo.write(str(s_Luz)+"\n")
-                    archivo.close()
+                    archivo.write(str(s_Luz)+" ")
+                    archivo.write(str(fecha.strftime(formato_2))+"\n")
 
+                    archivo.close()
                     
                     completed_video=os.path.join(get_mount_points(), thisLogFile)
-
-                    print('guardando sensados')
 
                     start=dt.datetime.now()
 
