@@ -1169,6 +1169,7 @@ class Ui_MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     import sys
+    print('Ant Project v.0.1')
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
