@@ -983,7 +983,11 @@ class Ui_MainWindow(QMainWindow):
         
         def hilo_sensado():
             start=dt.datetime.now()
-            t_record=15*60
+            t_record=5
+            formato="%Y%m%d"
+            formato_2="%Y%m%d-%H%M%S"
+            fecha=datetime.now()
+            name='log_'+fecha.strftime(formato)+'.txt'
 
             while True:
                 s_Luz=str(format(readLight(),'.2f'))
@@ -999,18 +1003,16 @@ class Ui_MainWindow(QMainWindow):
                 self.lb_luz.setFont(newfont)
 
                 if((dt.datetime.now() - start).seconds > t_record):
-                    formato="%Y%m%d"
-                    fecha=datetime.now()
-                    name=fecha.strftime(formato)
                     try:
-                        archivo = open('log_'+name,'a')
+                        archivo = open(name,'a')
                     except:
-                        archivo = open('log_'+name,'w')
+                        archivo = open(name,'w')
                     archivo.write(str(s_Temperatura)+" ")
                     archivo.write(str(s_Humedad)+" ")
-                    archivo.write(str(s_Luz)+"\n")
+                    archivo.write(str(s_Luz)+" ")
+                    archivo.write((dt.datetime.now()).strftime(formato_2)+"\n")
                     archivo.close()
-                    print('guardando sensados')
+                    print('guardando sensados '+(dt.datetime.now()).strftime(formato_2))
 
                     start=dt.datetime.now()
 
@@ -1064,17 +1066,13 @@ class Ui_MainWindow(QMainWindow):
             self.status_mainBar.setText("Esperando una accion")
             self.lb_temperatura.setFont(newfont)
 
-        def hilo_grabar_sensor():
-            while (1):
 
-                #SE GRABARIAN LOS DATOS
-                sleep(10)
                 
 
         hilo1 = threading.Thread(target=hilo_grabar_video)
-        hilo2 = threading.Thread(target=hilo_grabar_sensor)
+
         hilo1.start()
-        hilo2.start()
+
 
 
 

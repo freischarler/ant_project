@@ -273,12 +273,13 @@ def main():
             camera.stop_recording()
             camera.close()
             completed=1
+            print("Camera stop recording")
             break
 
         if(completed==1):
             #print("GRABAR EN: "+get_mount_points())           
             completed_video= os.path.join(get_mount_points(), thisVideoFile)
-            #print("Camera stop recording")
+
             if(newVideo.modo_comprimir==1):
                 #print("Beginning Convertion")
                 command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
