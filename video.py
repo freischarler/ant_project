@@ -8,6 +8,7 @@ from subprocess import check_output, CalledProcessError
 import picamera
 from picamera import PiCamera
 import time
+import threading
 import datetime as dt
 from datetime import datetime, date
 
@@ -120,6 +121,7 @@ class Video():
             formato="%Y%m%d-%H%M%S"
             fecha=datetime.now()
             self.name=fecha.strftime(formato)
+            print("El nombre del archivo va a ser: ", self.name)
         except:
             print("ERROR AL ESTABLECER FECHA.txt")
 
@@ -205,6 +207,7 @@ def main():
     while(dt.datetime.now()<inicio):
         sleep(1)
     
+    hilos_comprimir = []
     for _ in range(cant):
         start=dt.datetime.now()
         try:
@@ -245,27 +248,29 @@ def main():
                 #print("CROP DE ZOOM:"+str(roiX/())+"XXX"+str(roiY)+"XXX"+str(roiW)+"XXX"+str(roiH)+"XXX")
                 if(Video.modo_offscreen==0):
                     camera.start_preview()
-                camera.start_recording(thisVideoFile)
             else:
                 if newVideo.modo_fullscreen==0:
                     print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                     if(Video.modo_offscreen==0):
                         camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(newVideo.windows_x/newVideo.resize),int(newVideo.windows_y/newVideo.resize)))
-                    camera.start_recording(thisVideoFile)
                 else:
                     print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
                     camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
                     if(Video.modo_offscreen==0):
                         camera.start_preview(fullscreen=True)
-                    camera.start_recording(thisVideoFile)
+
+            print("Se empieza a grabar en: ", datetime.now().strftime("%H%M%S"))
+            camera.start_recording(thisVideoFile)
             while (dt.datetime.now() - start).seconds < t_record: 
                     camera.wait_recording(.5)
                     blink_rec()
             camera.stop_recording()
+            print("Se terminó de grabar en: ", datetime.now().strftime("%H%M%S"))
             camera.close()
+            print("Cámara cerrada en: ", datetime.now().strftime("%H%M%S"))
             completed=1
-                            
+
         except KeyboardInterrupt:
             print("terminando antes")
             if(Video.modo_offscreen==0):
@@ -277,16 +282,28 @@ def main():
             break
 
         if(completed==1):
-            #print("GRABAR EN: "+get_mount_points())           
-            completed_video= os.path.join(get_mount_points(), thisVideoFile)
-
             if(newVideo.modo_comprimir==1):
-                #print("Beginning Convertion")
-                command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
-                try:
-                    output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-                except subprocess.CalledProcessError as e:
-                    print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+                def hilo_comprimir(videofile):
+                    vfname = os.path.split(videofile)[-1]
+                    print("(hilo_comprimir)[{}] Comprimiendo en: {}".format(vfname, datetime.now().strftime("%H%M%S")))
+                    completed_video= os.path.join(get_mount_points(), videofile)
+                    while not os.path.exists(completed_video):
+                        sleep(1)
+                        print("(hilo_comprimir)[{}] Esperando que aparezca el .h264...".format(vfname))                    
+                    print("(hilo_comprimir)[{}] Ejectuando FFMPEG".format(vfname))
+                    command = "ffmpeg -r 30 -i {} -vcodec copy {}.mp4; rm {}".format(completed_video, os.path.splitext(videofile)[0], completed_video)
+                    try:
+                        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+                    except subprocess.CalledProcessError as e:
+                        print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+                    print("(hilo_comprimir)[{}] Compresión finalizada en: {}".format(vfname, datetime.now().strftime("%H%M%S"))) 
+                hilo = threading.Thread(target=hilo_comprimir, args=(thisVideoFile,))
+                hilos_comprimir.append(hilo)
+                hilo.start()
+    
+    for hilo in hilos_comprimir:
+        hilo.join()
+    print("Grabación finalizada.")
     GPIO.cleanup()
 
 if __name__ == "__main__":

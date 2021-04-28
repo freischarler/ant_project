@@ -1054,13 +1054,8 @@ class Ui_MainWindow(QMainWindow):
             self.status_mainBar.setText("Grabando video")
             self.lb_temperatura.setFont(newfont)
             try:
-                
-                p=subprocess.Popen(args=["python3", "video.py"],
-                            stdout=subprocess.PIPE,
-                            stdin=subprocess.PIPE)
-                stdout=p.communicate()
-                print(stdout)
-                
+                p=subprocess.Popen(args=["python3", "video.py"])
+                p.wait()
             except:
                 print("CANCELADO")
             self.status_mainBar.setText("Esperando una accion")
