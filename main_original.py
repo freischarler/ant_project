@@ -321,8 +321,8 @@ class Ui_ConfigurarPantalla(object):
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
         self.crop_width.valueChanged.connect(self.mantener_cuadroX)
         self.crop_height.valueChanged.connect(self.mantener_cuadroY)
-        self.check_visualizar.toggled.connect(self.actualizar_visualizar)
-        self.check_fullscreen.toggled.connect(self.fullscreen)
+        self.check_visualizar.toggled.connect(self.visualizar_change)
+        self.check_fullscreen.toggled.connect(self.fullscreen_change)
 
         self.checkBox_tiempo.stateChanged.connect(self.tiempo_default)
 
@@ -336,10 +336,9 @@ class Ui_ConfigurarPantalla(object):
         self.le_cantidad.valueChanged.connect(self.tiempo_default)
 
         self.checkBox_convertir.toggled.connect(self.actualizar_video)
-        self.le_wx.valueChanged.connect(self.actualizar_2)
-        self.le_wy.valueChanged.connect(self.actualizar_2)
+        
+        self.buttonBox.accepted.connect(self.guardar_conf_visualizacion)
 
-        self.cbox_size.currentIndexChanged.connect(self.actualizar_2)
         
     #-----------------------------
     #   PESTANIA de TIEMPO
@@ -467,30 +466,12 @@ class Ui_ConfigurarPantalla(object):
         ######################################
 
         try:
-            archivo=open("resolucion.txt")
-            txt_f=archivo.readline()
-            txt_f=archivo.readline()
-            if(txt_f[0]=="y"):
-                self.check_fullscreen.setChecked(True)
-                self.le_wx.setEnabled(False)
-                self.le_wy.setEnabled(False)
-                self.cbox_size.setEnabled(False)        
-                archivo.close()
-            else:
-                txt_x=archivo.readline().replace('\n', '')
-                txt_y=archivo.readline().replace('\n', '')
-                txt_s=archivo.readline().replace('\n', '')
-                self.check_fullscreen.setChecked(False)
-                self.le_wx.setValue(float(txt_x))
-                self.le_wy.setValue(float(txt_y))
-                if(txt_s=="1"): 
-                    self.cbox_size.setCurrentIndex(self.cbox_size.findText("1"))
-
-                if(txt_s=="2"): 
-                    self.cbox_size.setCurrentIndex(self.cbox_size.findText("2"))
-                if(txt_s=="3"): 
-                    self.cbox_size.setCurrentIndex(self.cbox_size.findText("3"))
-                archivo.close()
+            with open("resolucion.txt", 'r') as f:                
+                self.check_visualizar.setChecked(f.readline()[0] == 'y')
+                self.check_fullscreen.setChecked(f.readline()[0] == 'y')
+                self.le_wx.setValue(int(f.readline()))
+                self.le_wy.setValue(int(f.readline()))
+                self.cbox_size.setCurrentText(f.readline().replace('\n',''))
         except:
             self.check_fullscreen.setChecked(True)
             self.le_wx.setEnabled(False)
@@ -563,57 +544,34 @@ class Ui_ConfigurarPantalla(object):
     def preview_video(self):
         camera=PiCamera()
         camera.resolution = (int(self.resolucion_x),int(self.resolucion_y))
-        archivo = open("resolucion.txt")
-        txt=archivo.readline()
-        txt=archivo.readline()
-        print(str(self.check_fullscreen.isChecked()))
-        if(self.check_fullscreen.isChecked()==True):
-            camera.start_preview(fullscreen=True)
-            archivo = open("resolucion.txt",'w')
-            archivo.write("no"+"\n"+"yes"+"\n"+str(0)+"\n"+str(0))
-            archivo.close()
-        else:
-            txt=self.le_wx.text()
-            txt2=self.le_wy.text()
-            resize=int(self.cbox_size.currentText())
-            archivo = open("resolucion.txt",'w')
-            wx=self.le_wx.text()
-            wy=self.le_wy.text()
-            archivo.write("no"+"\n"+"no"+"\n"+wx+"\n"+wy+"\n"+str(resize))
-            archivo.close()   
-            camera.start_preview(fullscreen=False, window=(int(txt),int(txt2),int(640/resize),int(480/resize)))
+        wx=self.le_wx.value()
+        wy=self.le_wy.value()
+        resize=int(self.cbox_size.currentText())
+        camera.start_preview(fullscreen=False, window=(wx,wy,int(640/resize),int(480/resize)))
         sleep(3)
         camera.stop_preview()
         camera.close()
 
-    def actualizar_2(self):
-        archivo = open("resolucion.txt",'w')
-        wx=self.le_wx.text().replace('\n', ' ')
-        wy=self.le_wy.text().replace('\n', ' ')
-        size=str(self.cbox_size.currentIndex())
-        archivo.write("yes"+"\n""no"+"\n"+wx+"\n"+wy+size)
-        archivo.close()
+    def guardar_conf_visualizacion(self):
+        preview = self.check_visualizar.isChecked()
+        fullscreen = self.check_fullscreen.isChecked()
+        wx=self.le_wx.value()
+        wy=self.le_wy.value()
+        escalado = int(self.cbox_size.currentText())
+        with open("resolucion.txt", 'w') as f:
+            f.write(f"{'yes' if preview else 'no'}\n{'yes' if fullscreen else 'no'}\n{wx}\n{wy}\n{escalado}")
 
-
-    def actualizar_visualizar(self):
+    def visualizar_change(self):
         if (self.check_visualizar.isChecked()):
             self.check_fullscreen.setEnabled(True)
             self.le_wx.setEnabled(True)
             self.le_wy.setEnabled(True)
             self.cbox_size.setEnabled(False)
-            archivo = open("resolucion.txt",'w')
-            self.resize=self.cbox_size.currentText()
-            archivo.write("yes"+"\n"+"no"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
-            archivo.close()       
         else:
             self.check_fullscreen.setEnabled(False)
             self.le_wx.setEnabled(False)
             self.le_wy.setEnabled(False)
             self.cbox_size.setEnabled(False)
-            archivo = open("resolucion.txt",'w')
-            self.resize=self.cbox_size.currentText()
-            archivo.write("no"+"\n"+"yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
-            archivo.close()
 
 
 ##############################
@@ -621,7 +579,7 @@ class Ui_ConfigurarPantalla(object):
 ##############################
 
 
-    def fullscreen(self):
+    def fullscreen_change(self):
         if (self.check_fullscreen.isChecked()):
             self.le_wx.setEnabled(False)
             self.le_wy.setEnabled(False)
@@ -630,12 +588,7 @@ class Ui_ConfigurarPantalla(object):
             self.le_wx.setEnabled(True)
             self.le_wy.setEnabled(True)
             self.cbox_size.setEnabled(True)
-        
-        archivo = open("resolucion.txt",'w')
-        self.resize=self.cbox_size.currentText()
-        archivo.write("no"+"\n"+"yes"+"\n"+"0"+"\n"+"0"+"\n"+str(self.resize))
-        archivo.close()   
-
+    
     #-----------------------------
     #   PESTANIA de Crop
     #   Mantiene el cuadrado dentro de los limites
