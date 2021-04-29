@@ -71,8 +71,8 @@ class Video():
 
         try:
             archivo = open("video.txt")
-            self.windows_x=archivo.readline()
-            self.windows_y=archivo.readline()
+            self.windows_x=int(archivo.readline().replace('\n',''))
+            self.windows_y=int(archivo.readline().replace('\n',''))
             comprimir=archivo.readline()
             if(comprimir[0]=="y"): self.modo_comprimir=1
             print("Resolution: "+self.windows_x+self.windows_y)
@@ -125,6 +125,60 @@ class Video():
         except:
             print("ERROR AL ESTABLECER FECHA.txt")
 
+class Blinker:
+    def __init__(self) -> None:
+        self._rec_event = threading.Event()
+        self._error_event = threading.Event()
+        self._end_event = threading.Event()
+
+        self._error_thread = threading.Thread(target=self._blink_error, args=(self._error_event, self._end_event))
+        self._rec_thread = threading.Thread(target=self._blink_rec, args=(self._rec_event, self._end_event))
+
+        self.start_rec = self._rec_event.set
+        self.stop_rec = self._rec_event.clear
+        self.error = self._error_event.set
+        self.error_clear = self._error_event.clear
+
+    def open(self):
+        GPIO.setmode(GPIO.BOARD)            # Numbers GPIOs by physical location
+        GPIO.setup(ErrorPin, GPIO.OUT)      # Set pin mode as output
+        GPIO.output(ErrorPin, GPIO.LOW)    # Set pin low to turn on led
+        GPIO.setup(RecLed, GPIO.OUT)      # Set pin mode as output
+        GPIO.output(RecLed, GPIO.LOW)    # Set pin low to turn on led
+        self._error_thread.start()
+        self._rec_thread.start()
+
+    def close(self):
+        GPIO.cleanup()
+        self._end_event.set()
+        self._error_thread.join()
+        self._rec_thread.join()
+
+    @staticmethod
+    def _blink_rec(rec: threading.Event, end: threading.Event):
+        while not end.is_set():
+            if rec.is_set():
+                GPIO.output(RecLed, GPIO.HIGH)
+                time.sleep(0.2)
+                GPIO.output(RecLed, GPIO.LOW)
+                time.sleep(0.2)
+
+    @staticmethod
+    def _blink_error(error: threading.Event, end: threading.Event):
+        while not end.is_set():
+            if error.is_set():
+                GPIO.output(ErrorPin, GPIO.HIGH)
+                time.sleep(0.2)
+                GPIO.output(ErrorPin, GPIO.LOW)
+                time.sleep(0.2)
+
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
 
 # DISPOSITIVOS USB
 
@@ -136,7 +190,7 @@ def get_usb_devices():
 
 # DIRECCION DEL USB
 
-def get_mount_points(devices=None):
+def get_mount_points(devices=None, blinker: Blinker = None):
     devices = devices or get_usb_devices() # if devices are None: get_usb_devices
     output = check_output(['mount']).splitlines()
     output = [tmp.decode('UTF-8') for tmp in output]
@@ -151,35 +205,14 @@ def get_mount_points(devices=None):
         return result.pop()
     else:
         print('CONECTE UN DISPOSITIVO USB PARA GRABAR!' )
-        blink_error()
+        blinker.error()
 
-def setup():
-    GPIO.setmode(GPIO.BOARD)            # Numbers GPIOs by physical location
-    GPIO.setup(ErrorPin, GPIO.OUT)      # Set pin mode as output
-    GPIO.output(ErrorPin, GPIO.LOW)    # Set pin low to turn on led
-    GPIO.setup(RecLed, GPIO.OUT)      # Set pin mode as output
-    GPIO.output(RecLed, GPIO.LOW)    # Set pin low to turn on led
-
-def blink_error():
-    while True:
-        GPIO.output(ErrorPin, GPIO.HIGH)
-        time.sleep(0.3)
-        GPIO.output(ErrorPin, GPIO.LOW)
-        time.sleep(0.3)
-
-def blink_rec():
-    GPIO.output(RecLed, GPIO.HIGH)
-    time.sleep(0.2)
-    GPIO.output(RecLed, GPIO.LOW)
-    time.sleep(0.2)
-
-def main():
-    setup()
+def main(blinker: Blinker):
     completed=0
     t_preview=2
     roiX=roiY=roiW=roiH=0.0
     #make destination direcory
-    dstDir = get_mount_points()  + '/'
+    dstDir = get_mount_points(None, blinker)  + '/'
     if not os.path.exists(dstDir):
         os.makedirs(dstDir)
 
@@ -261,11 +294,12 @@ def main():
                         camera.start_preview(fullscreen=True)
 
             print("Se empieza a grabar en: ", datetime.now().strftime("%H%M%S"))
+            blinker.start_rec()
             camera.start_recording(thisVideoFile)
             while (dt.datetime.now() - start).seconds < t_record: 
                     camera.wait_recording(.5)
-                    blink_rec()
             camera.stop_recording()
+            blinker.stop_rec()
             print("Se terminó de grabar en: ", datetime.now().strftime("%H%M%S"))
             camera.close()
             print("Cámara cerrada en: ", datetime.now().strftime("%H%M%S"))
@@ -276,6 +310,7 @@ def main():
             if(Video.modo_offscreen==0):
                 camera.stop_preview()
             camera.stop_recording()
+            blinker.stop_rec()
             camera.close()
             completed=1
             print("Camera stop recording")
@@ -286,7 +321,7 @@ def main():
                 def hilo_comprimir(videofile):
                     vfname = os.path.split(videofile)[-1]
                     print("(hilo_comprimir)[{}] Comprimiendo en: {}".format(vfname, datetime.now().strftime("%H%M%S")))
-                    completed_video= os.path.join(get_mount_points(), videofile)
+                    completed_video= os.path.join(get_mount_points(None, blinker), videofile)
                     while not os.path.exists(completed_video):
                         sleep(1)
                         print("(hilo_comprimir)[{}] Esperando que aparezca el .h264...".format(vfname))                    
@@ -304,11 +339,7 @@ def main():
     for hilo in hilos_comprimir:
         hilo.join()
     print("Grabación finalizada.")
-    GPIO.cleanup()
 
 if __name__ == "__main__":
-    main()
-
-
-
-            
+    with Blinker() as blinker:
+        main(blinker)
