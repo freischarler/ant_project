@@ -1,3 +1,4 @@
+from configs import DEFAULT_CONFIGS_PATH, load_configs, save_configs
 import sys
 import os
 
@@ -10,14 +11,8 @@ from random import random
 
 import picamera
 from picamera import PiCamera
-import time
 from time import sleep
-
-
-import time
-from datetime import datetime, date, time, timedelta
-
-import datetime as dt 
+import datetime as dt
 
 import smbus #para i2c
 
@@ -52,7 +47,6 @@ def convertToNumber(data):
 def readLight(addr=DEVICE):
     data = bus.read_i2c_block_data(addr,ONE_TIME_HIGH_RES_MODE)
     return convertToNumber(data)
-
 
     #-----------------------------
     #   VENTANA DE CONFIGURACION DE PANTALLA
@@ -97,7 +91,7 @@ class Ui_ConfigurarPantalla(object):
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.verticalLayoutWidget = QtWidgets.QWidget(self.tab)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(80, 20, 211, 241))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(80, 20, 230, 241))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -120,27 +114,39 @@ class Ui_ConfigurarPantalla(object):
         self.le_hora.setObjectName("le_hora")
         self.horizontalLayout_7.addWidget(self.le_hora)
         self.verticalLayout.addLayout(self.horizontalLayout_7)
-        self.checkBox_tiempo = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.checkBox_tiempo.setObjectName("checkBox_tiempo")
-        self.verticalLayout.addWidget(self.checkBox_tiempo)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.label_3 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.label_3.setObjectName("label_3")
-        self.horizontalLayout_2.addWidget(self.label_3)
+        self.btn_tiempo_default = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.btn_tiempo_default.setObjectName("btn_tiempo_default")
+        self.verticalLayout.addWidget(self.btn_tiempo_default)
+
+        self.le_iniciofecha_hl = QtWidgets.QHBoxLayout()
+        self.le_iniciofecha_hl.setObjectName("le_iniciofecha_hl")
+        self.le_iniciofecha_lbl = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.le_iniciofecha_lbl.setObjectName("le_iniciofecha_lbl")
+        self.le_iniciofecha = QtWidgets.QDateEdit(self.verticalLayoutWidget)
+        self.le_iniciofecha.setObjectName("le_iniciofecha")
+        self.le_iniciofecha_hl.addWidget(self.le_iniciofecha_lbl)
+        self.le_iniciofecha_hl.addWidget(self.le_iniciofecha)
+        
+        self.le_inicio_hl = QtWidgets.QHBoxLayout()
+        self.le_inicio_hl.setObjectName("le_inicio_hl")
+        self.le_inicio_lbl = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.le_inicio_lbl.setObjectName("le_inicio_lbl")
         self.le_inicio = QtWidgets.QTimeEdit(self.verticalLayoutWidget)
         self.le_inicio.setObjectName("le_inicio")
-        self.horizontalLayout_2.addWidget(self.le_inicio)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.le_inicio_hl.addWidget(self.le_inicio_lbl)
+        self.le_inicio_hl.addWidget(self.le_inicio)
+
+        self.verticalLayout.addLayout(self.le_iniciofecha_hl)
+        self.verticalLayout.addLayout(self.le_inicio_hl)
+
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_6.addWidget(self.label_6)
-        self.le_duracion = QtWidgets.QDoubleSpinBox(self.verticalLayoutWidget)
-        self.le_duracion.setDecimals(0)
-        self.le_duracion.setMaximum(60)
-        self.le_duracion.setMinimum(1)
+        self.le_duracion = QtWidgets.QTimeEdit(self.verticalLayoutWidget)
+        self.le_duracion.setTimeRange(QTime(0,0,5), QTime(23,59,59))    
+        self.le_duracion.setDisplayFormat("HH:mm:ss")
         self.le_duracion.setObjectName("le_duracion")
         self.horizontalLayout_6.addWidget(self.le_duracion)
         self.verticalLayout.addLayout(self.horizontalLayout_6)
@@ -149,8 +155,7 @@ class Ui_ConfigurarPantalla(object):
         self.label_4 = QtWidgets.QLabel(self.verticalLayoutWidget)
         self.label_4.setObjectName("label_4")
         self.horizontalLayout.addWidget(self.label_4)
-        self.le_cantidad = QtWidgets.QDoubleSpinBox(self.verticalLayoutWidget)
-        self.le_cantidad.setDecimals(0)
+        self.le_cantidad = QtWidgets.QSpinBox(self.verticalLayoutWidget)
         self.le_cantidad.setObjectName("le_cantidad")
         self.horizontalLayout.addWidget(self.le_cantidad)
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -309,13 +314,11 @@ class Ui_ConfigurarPantalla(object):
         self.buttonBox.rejected.connect(Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
-
-        self.cargar_default()
+        self.cargar_configs()
         
     #-----------------------------
     #   INICIO DE FUNCIONES
     #-----------------------------
-        self.qbox_resolucion.currentIndexChanged.connect(self.actualizar_video)
         self.button_preview.clicked.connect(self.preview_image)
         self.crop_x.valueChanged.connect(self.mantener_cuadroX)
         self.crop_y.valueChanged.connect(self.mantener_cuadroY)
@@ -324,61 +327,20 @@ class Ui_ConfigurarPantalla(object):
         self.check_visualizar.toggled.connect(self.visualizar_change)
         self.check_fullscreen.toggled.connect(self.fullscreen_change)
 
-        self.checkBox_tiempo.stateChanged.connect(self.tiempo_default)
-
+        self.btn_tiempo_default.released.connect(self.tiempo_default)
+        
         self.pushButton.clicked.connect(self.preview_video)
         self.le_fecha.dateTimeChanged.connect(self.update_time)
         self.le_hora.dateTimeChanged.connect(self.update_time)
-        self.le_inicio.dateTimeChanged.connect(self.tiempo_default)
-
-
-        self.le_duracion.valueChanged.connect(self.tiempo_default)
-        self.le_cantidad.valueChanged.connect(self.tiempo_default)
-
-        self.checkBox_convertir.toggled.connect(self.actualizar_video)
         
-        self.buttonBox.accepted.connect(self.guardar_conf_visualizacion)
-
-        
-    #-----------------------------
-    #   PESTANIA de TIEMPO
-    #   Permite configurar el inicio,fin y resolucion del video
-    #-----------------------------
-
-
+        self.buttonBox.accepted.connect(self.guardar_configs)
 
     def tiempo_default(self):
-        if self.checkBox_tiempo.isChecked():
-            self.le_cantidad.setValue(int(12))
-            self.le_duracion.setValue(int(30))
-            txt=self.le_hora.time().toString()
-            txt = txt.split(":")
-            start = datetime(2000, 1, 1,int(txt[0]),(int(txt[1])))
-            delta = dt.timedelta(minutes = 1)
-            start = start + delta
-            self.le_inicio.setTime(QTime(start.hour,start.minute))
-        
-
-
-        
-        self.f_actual=self.le_fecha.date().toPyDate().strftime('%d/%m/%y')
-        self.h_actual=self.le_hora.text()
-        self.duracion_videos=self.le_duracion.text()
-        self.cantidad_videos=self.le_cantidad.text()
-        self.h_inicio=self.le_inicio.text()
-        archivo=open("tiempo.txt", 'w')
-        archivo.write(str(self.f_actual)+"\n")
-        archivo.write(str(self.h_actual)+"\n")
-        if(self.checkBox_tiempo.isChecked()): 
-            archivo.write("yes"+"\n")
-        else:
-            archivo.write("no"+"\n")
-        archivo.write(str(self.h_inicio)+"\n")
-        archivo.write(str(self.duracion_videos)+"\n")
-        archivo.write(str(self.cantidad_videos))
-        archivo.close()
-
-
+        self.le_cantidad.setValue(12)
+        self.le_duracion.setTime(QTime(0,30,0))
+        self.le_iniciofecha.setDate(QDate.currentDate())
+        now = QTime.currentTime()
+        self.le_inicio.setTime(QTime(now.hour(),now.minute()+1))
 
     def update_time(self):
         string_time1 = self.le_fecha.date().toPyDate().strftime('%y-%m-%d')
@@ -393,157 +355,10 @@ class Ui_ConfigurarPantalla(object):
         os.system (command + date_chain)
         print(command + date_chain)
 
-    def cargar_default(self):
-        #CARGAMOS VALORES DE LA VENTANA DE TIEMPO
-        try:
-            archivo=open("tiempo.txt")
-            self.f_actual=archivo.readline()
-            self.h_actual=archivo.readline()
-            self.tiempo_defecto=archivo.readline()
-            self.h_inicio=archivo.readline()
-            self.duracion_videos=archivo.readline()
-            self.cantidad_videos=archivo.readline()
-            archivo.close()
-        except:
-            duracion_videos=6
-            cantidad_videos=1
-
-
-        if(self.tiempo_defecto[0]=="y"): 
-            self.checkBox_convertir.setChecked(True)            
-            txt = self.h_inicio.split(":")
-            #QTime time(txt[0], txt[1])
-            self.le_inicio.setTime(QTime(int(txt[0]),int(txt[1])))
-
-            start = datetime(2000, 1, 1,int(txt[0]),int(txt[1]))
-            delta = dt.timedelta(hours = 6)
-            end = start + delta
-            #self.le_duracion.setTime(QTime(end.hour,end.minute))
-            self.le_duracion.setValue(int(30))
-            self.le_cantidad.setValue(int(6))
-
-
-
-        try:
-            archivo=open("grabacion.txt")
-            self.resolucion_x=archivo.readline()
-            self.resolucion_y=archivo.readline()
-            self.comprimir=archivo.readline()
-            archivo.close()
-
-            
-        except:
-            resolucion_x=640
-            resolucion_y=480
-            comprimir="no"
-            archivo=open("grabacion.txt", 'w')
-            archivo.write(str(self.resolucion_x)+"\n")
-            archivo.write(str(self.resolucion_y)+"\n")
-            archivo.write(str(self.comprimir))
-            archivo.close()
-
-        if(self.comprimir[0]=="y"): 
-            self.checkBox_convertir.setChecked(True)
-
-                ######################################
-                #CARGA RESOLUCION
-                ######################################
-
-        if(self.resolucion_x[:2]=="19"): 
-            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1920x1080"))
-        if(self.resolucion_x[:2]=="16"): 
-            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1640x1232"))
-        if(self.resolucion_x[:2]=="12"): 
-            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("1280x720"))
-        if(self.resolucion_x[:2]=="64"): 
-            self.qbox_resolucion.setCurrentIndex(self.qbox_resolucion.findText("640x480"))    
-
-
-
-            
-        ######################################
-        #CARGAMOS VALORES DE LA VENTANA VISUALIZACION
-        ######################################
-
-        try:
-            with open("resolucion.txt", 'r') as f:                
-                self.check_visualizar.setChecked(f.readline()[0] == 'y')
-                self.check_fullscreen.setChecked(f.readline()[0] == 'y')
-                self.le_wx.setValue(int(f.readline()))
-                self.le_wy.setValue(int(f.readline()))
-                self.cbox_size.setCurrentText(f.readline().replace('\n',''))
-        except:
-            self.check_fullscreen.setChecked(True)
-            self.le_wx.setEnabled(False)
-            self.le_wy.setEnabled(False)
-            self.cbox_size.setEnabled(False) 
-            archivo.close()
-
-    def actualizar_video(self):
-        #self.cantidad_videos=self.le_cantidad.value()     
-        index = self.qbox_resolucion.currentIndex()
-        if(index==0): 
-            self.resolucion_x=1920 
-            self.resolucion_y=1080
-        if(index==1): 
-            self.resolucion_x=1640 
-            self.resolucion_y=1232
-        if(index==2): 
-            self.resolucion_x=1280 
-            self.resolucion_y=720
-        if(index==3): 
-            self.resolucion_x=640 
-            self.resolucion_y=480
-
-        if(self.checkBox_convertir.isChecked()):
-            self.comprimir="yes"
-        else:
-            self.comprimir="no"
-        
-        archivo = open("video.txt",'w')
-        archivo.write(str(self.resolucion_x)+"\n")
-        archivo.write(str(self.resolucion_y)+"\n")
-        archivo.write(str(self.comprimir))
-        archivo.close()
-
-    def actualizar(self):
-        f_inicio=self.le_inicio.text()
-
-
-
-        t_total=int(self.duracion_grabacion*self.cantidad_videos)
-        
-        t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:]))
-        if (int(t_total)+t.minute)>=60:
-            if(t.hour+int(int(t_total+t.minute)/60)>23):
-                 t=datetime.time(int(f_inicio[:2])+int(int(t_total+t.minute)/60)-24,int(f_inicio[3:])+int(int(t_total+t.minute)%60))
-            else:
-                t=datetime.time(int(f_inicio[:2])+int(int(t_total+t.minute)/60),int(f_inicio[3:])+int(int(t_total+t.minute)%60))
-        else:
-            t=datetime.time(int(f_inicio[:2]),int(f_inicio[3:])+int(t_total))
-        tiempo_finalizacion=t
-
-        #self.le_duracionalizacion.setText(str(t.hour)+':'+str(t.minute))
-        self.grabar_datos() #grabamos duracion y cantidad
-
-
-
-    def grabar_datos(self):
-        archivo = open("grabacion.txt",'w')
-        archivo.write(str(self.duracion_grabacion)+"\n")
-        archivo.write(str(self.cantidad_videos)+"\n")
-        archivo.close()
-
-        
-
-    #-----------------------------
-    #   PESTANIA de PREVIEW_VIDEO
-    #   Permite acomodar el video en la pantalla o fullscreen
-    #-----------------------------
-
     def preview_video(self):
         camera=PiCamera()
-        camera.resolution = (int(self.resolucion_x),int(self.resolucion_y))
+        res_x, res_y = map(int, self.qbox_resolucion.currentText().split('x'))
+        camera.resolution = (res_x, res_y)
         wx=self.le_wx.value()
         wy=self.le_wy.value()
         resize=int(self.cbox_size.currentText())
@@ -552,14 +367,66 @@ class Ui_ConfigurarPantalla(object):
         camera.stop_preview()
         camera.close()
 
-    def guardar_conf_visualizacion(self):
-        preview = self.check_visualizar.isChecked()
-        fullscreen = self.check_fullscreen.isChecked()
-        wx=self.le_wx.value()
-        wy=self.le_wy.value()
-        escalado = int(self.cbox_size.currentText())
-        with open("resolucion.txt", 'w') as f:
-            f.write(f"{'yes' if preview else 'no'}\n{'yes' if fullscreen else 'no'}\n{wx}\n{wy}\n{escalado}")
+    def cargar_configs(self):
+        self.configs = load_configs(DEFAULT_CONFIGS_PATH)
+        tiempo = self.configs['tiempo']
+        fh_inicio: dt.datetime = tiempo['fh_inicio']
+        self.le_inicio.setTime(QTime(fh_inicio.hour,fh_inicio.minute))
+        self.le_iniciofecha.setDate(QDate(fh_inicio.year,fh_inicio.month,fh_inicio.day))
+        duracion: dt.time = tiempo['duracion_videos']
+        self.le_duracion.setTime(QTime(duracion.hour,duracion.minute,duracion.second))
+        self.le_cantidad.setValue(tiempo['cantidad_videos'])
+
+        grabacion = self.configs['grabacion']
+        res_x, res_y = grabacion['res_x'], grabacion['res_y']
+        res_idx = self.qbox_resolucion.findText(f"{res_x}x{res_y}")
+        self.qbox_resolucion.setCurrentIndex(res_idx)
+        self.checkBox_convertir.setChecked(grabacion['convert_mp4'])
+
+        preview = self.configs['preview']
+        self.check_visualizar.setChecked(preview['on'])
+        self.check_fullscreen.setChecked(preview['fullscreen'])
+        self.le_wx.setValue(preview['pos_x'])
+        self.le_wy.setValue(preview['pos_y'])
+        scale_idx = self.cbox_size.findText(str(preview['scale']))
+        self.cbox_size.setCurrentIndex(scale_idx)
+
+        # TODO: cargar tabla [crop]
+    
+    def guardar_configs(self):
+        tiempo = self.configs['tiempo']
+        fecha_inicio = self.le_iniciofecha.date()
+        hora_inicio = self.le_inicio.time()
+        tiempo['fh_inicio'] = dt.datetime(
+            year=fecha_inicio.year(),
+            month=fecha_inicio.month(),
+            day=fecha_inicio.day(),
+            hour=hora_inicio.hour(),
+            minute=hora_inicio.minute(),
+        )
+        tiempo['duracion_videos'] = dt.time(
+            hour=self.le_duracion.time().hour(),
+            minute=self.le_duracion.time().minute(),
+            second=self.le_duracion.time().second(),
+        )
+        tiempo['cantidad_videos'] = self.le_cantidad.value()
+
+        grabacion = self.configs['grabacion']
+        res_x, res_y = map(int, self.qbox_resolucion.currentText().split('x'))
+        grabacion['res_x'] = res_x
+        grabacion['res_y'] = res_y
+        grabacion['convert_mp4'] = self.checkBox_convertir.isChecked()
+
+        preview = self.configs['preview']
+        preview['on'] = self.check_visualizar.isChecked()
+        preview['fullscreen'] = self.check_fullscreen.isChecked()
+        preview['pos_x'] = self.le_wx.value()
+        preview['pos_y'] = self.le_wy.value()
+        preview['scale'] = int(self.cbox_size.currentText())
+
+        # TODO: editar tabla [crop]
+
+        save_configs(self.configs, DEFAULT_CONFIGS_PATH)
 
     def visualizar_change(self):
         if (self.check_visualizar.isChecked()):
@@ -573,22 +440,20 @@ class Ui_ConfigurarPantalla(object):
             self.le_wy.setEnabled(False)
             self.cbox_size.setEnabled(False)
 
-
-##############################
-#FALTA IMPLEMENTAR ESTE CODIGO 
-##############################
-
-
     def fullscreen_change(self):
         if (self.check_fullscreen.isChecked()):
             self.le_wx.setEnabled(False)
             self.le_wy.setEnabled(False)
-            self.cbox_size.setEnabled(False)        
+            self.cbox_size.setEnabled(False)
         else:
             self.le_wx.setEnabled(True)
             self.le_wy.setEnabled(True)
             self.cbox_size.setEnabled(True)
     
+
+    ##############################
+    #FALTA IMPLEMENTAR ESTE CODIGO 
+    ##############################
     #-----------------------------
     #   PESTANIA de Crop
     #   Mantiene el cuadrado dentro de los limites
@@ -674,9 +539,10 @@ class Ui_ConfigurarPantalla(object):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.label_9.setText(_translate("Dialog", "Fecha actual"))
         self.label_14.setText(_translate("Dialog", "Hora actual"))
-        self.checkBox_tiempo.setText(_translate("Dialog", "Tiempo por defecto"))
-        self.label_3.setText(_translate("Dialog", "Inicio video (hora):"))
-        self.label_6.setText(_translate("Dialog", "Duracion (min):"))
+        self.btn_tiempo_default.setText(_translate("Dialog", "Tiempo por defecto"))
+        self.le_iniciofecha_lbl.setText(_translate("Dialog", "Inicio video (día):"))
+        self.le_inicio_lbl.setText(_translate("Dialog", "Inicio video (hora):"))
+        self.label_6.setText(_translate("Dialog", "Duracion:"))
         self.label_4.setText(_translate("Dialog", "Cantidad de videos:"))
         self.label_21.setText(_translate("Dialog", "<html><head/><body><p><span style=\" color:#2e3436;\">*Tiempo por defecto: </span></p><p><span style=\" color:#2e3436;\">Graba video automaticamente</span></p><p><span style=\" color:#2e3436;\">Duración: 6 horas</span></p><p><span style=\" color:#2e3436;\">Tamaño de los videos: 30 minutos</span></p><p><span style=\" color:#2e3436;\">Total videos: 48</span></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Dialog", "Tiempo"))
@@ -782,23 +648,6 @@ class ConfigurarPantalla(QDialog):
 
 
 class Ui_MainWindow(QMainWindow):
-    crop_bool=0
-    modo_fullscreen=1
-    windows_x=0
-    windows_y=0
-    resize=1
-    crop_x=0
-    crop_y=0
-    crop_w=1
-    crop_h=1
-    windows_posx=0
-    windows_posy=0
-    s_Temperatura=""
-    s_Humedad=""
-    s_uv=""
-    dstDir=""
-
-
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
@@ -939,7 +788,7 @@ class Ui_MainWindow(QMainWindow):
             t_record=5
             formato="%Y%m%d"
             formato_2="%Y%m%d-%H%M%S"
-            fecha=datetime.now()
+            fecha=dt.datetime.now()
             name='log_'+fecha.strftime(formato)+'.txt'
 
             while True:
@@ -992,7 +841,7 @@ class Ui_MainWindow(QMainWindow):
         #QtCore.QMetaObject.connectSlotsByName(MainWindow)
         #self.actionc_on.setText("Esperando orden...")
         self.actionSalir.triggered.connect(self.salir)
-    
+
     def salir(self):
             QCoreApplication.quit()
 
