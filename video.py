@@ -77,9 +77,9 @@ class Blinker:
 # DISPOSITIVOS USB
 
 def get_usb_devices():
-    sdb_devices = map(os.path.realpath, glob('/sys/block/sd*'))
-    usb_devices = (dev for dev in sdb_devices
-    if 'usb' in dev.split('/')[5])
+    sdb_devices = list(map(os.path.realpath, glob('/sys/block/sd*')))
+    usb_devices = [dev for dev in sdb_devices
+    	if any(('usb' in c) for c in dev.split('/'))]
     return dict((os.path.basename(dev), dev) for dev in usb_devices)
 
 # DIRECCION DEL USB
