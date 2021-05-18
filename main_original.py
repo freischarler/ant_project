@@ -156,6 +156,7 @@ class Ui_ConfigurarPantalla(object):
         self.label_4.setObjectName("label_4")
         self.horizontalLayout.addWidget(self.label_4)
         self.le_cantidad = QtWidgets.QSpinBox(self.verticalLayoutWidget)
+        self.le_cantidad.setRange(1, 99999) # TODO: cambiar este campo a "hora de finalización" 
         self.le_cantidad.setObjectName("le_cantidad")
         self.horizontalLayout.addWidget(self.le_cantidad)
         self.verticalLayout.addLayout(self.horizontalLayout)
