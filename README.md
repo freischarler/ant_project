@@ -5,7 +5,7 @@
 *Desde la Rpi abrir la consola (Ctrl+Alt+T) y escribir:*
 ```
 cd Desktop
-git clone https://github.com/freischarler/ant_project
+git clone https://github.com/fd-sturniolo/ant_project
 ```
 *Nota: Luego de clonar debe instalar las librerias y dependencias, ir a la sección de requisitos !!!*
 
@@ -23,7 +23,7 @@ python3 main_original.py
 sudo apt-get install python3-pyqt5
 sudo apt-get install python3-rpi.gpio
 sudo apt install python3-smbus
-sudo apt-get install gpac
+pip3 install tomlkit
 ```
 
 Si se clono el repositorio entrar a la carpeta ant_project (cd Desktop/ant_project) y ejecutar:

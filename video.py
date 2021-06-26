@@ -1,3 +1,4 @@
+from configs import DEFAULT_CONFIGS_PATH, load_configs
 import os
 import sys
 from glob import glob
@@ -8,6 +9,7 @@ from subprocess import check_output, CalledProcessError
 import picamera
 from picamera import PiCamera
 import time
+import threading
 import datetime as dt
 from datetime import datetime, date
 
@@ -18,123 +20,71 @@ import RPi.GPIO as GPIO
 
 ErrorPin=13
 RecLed=15
+class Blinker:
+    def __init__(self) -> None:
+        self._rec_event = threading.Event()
+        self._error_event = threading.Event()
+        self._end_event = threading.Event()
 
-class Video():
-    crop_bool=0
-    modo_fullscreen=1
-    modo_offscreen=0
-    modo_comprimir=0
-    windows_x=0
-    windows_y=0
-    resize=1
-    crop_x=0
-    crop_y=0
-    crop_w=1
-    crop_h=1
-    windows_posx=0
-    windows_posy=0
-    name="test"
-    duracion_grabacion=0
+        self._error_thread = threading.Thread(target=self._blink_error, args=(self._error_event, self._end_event))
+        self._rec_thread = threading.Thread(target=self._blink_rec, args=(self._rec_event, self._end_event))
 
-    f_actual="1/1/00"
-    h_actual="12:12"
-    tiempo_defecto="yes"
-    h_inicio="13:13"
-    duracion_grabacion=5
-    cantidad_videos=1
+        self.start_rec = self._rec_event.set
+        self.stop_rec = self._rec_event.clear
+        self.error = self._error_event.set
+        self.error_clear = self._error_event.clear
 
-    def cargar_default(self):
-        print("Load configuration...")
-        
-        try:
-            archivo = open("tiempo.txt")
-            self.f_actual=archivo.readline().replace('\n', '')
-            self.h_actual=archivo.readline().replace('\n', '')
-            self.tiempo_defecto=archivo.readline().replace('\n', '')
-            self.h_inicio=archivo.readline().replace('\n', '')
-            self.duracion_grabacion=int(archivo.readline().replace('\n', ''))
-            self.cantidad_videos=int(archivo.readline())
-        except:
-            print("ERROR AL LEER TIEMPO.txt")
-            self.f_actual="1/1/00"
-            self.h_actual="12:12"
-            self.tiempo_defecto="yes"
-            self.h_inicio="00:00"
-            self.duracion_grabacion=5
-            self.cantidad_videos=1
+    def open(self):
+        GPIO.setmode(GPIO.BOARD)            # Numbers GPIOs by physical location
+        GPIO.setup(ErrorPin, GPIO.OUT)      # Set pin mode as output
+        GPIO.output(ErrorPin, GPIO.LOW)    # Set pin low to turn on led
+        GPIO.setup(RecLed, GPIO.OUT)      # Set pin mode as output
+        GPIO.output(RecLed, GPIO.LOW)    # Set pin low to turn on led
+        self._error_thread.start()
+        self._rec_thread.start()
 
-            #txt = self.f_actual.split("/")
-            
-            #inicio= datetime(int(txt[2]), int(txt[1]), int(txt[0]),int(txt2[0]),int(txt2[1]))
+    def close(self):
+        GPIO.cleanup()
+        self._end_event.set()
+        self._error_thread.join()
+        self._rec_thread.join()
 
+    @staticmethod
+    def _blink_rec(rec: threading.Event, end: threading.Event):
+        while not end.is_set():
+            if rec.is_set():
+                GPIO.output(RecLed, GPIO.HIGH)
+                time.sleep(0.2)
+                GPIO.output(RecLed, GPIO.LOW)
+                time.sleep(0.2)
 
-        try:
-            archivo = open("video.txt")
-            self.windows_x=archivo.readline()
-            self.windows_y=archivo.readline()
-            comprimir=archivo.readline()
-            if(comprimir[0]=="y"): self.modo_comprimir=1
-            print("Resolution: "+self.windows_x+self.windows_y)
-            archivo.close()
-        except:
-            print("ERROR AL LEER GRABACION.txt")
-            self.windows_x=640
-            self.windows_y=480
-            self.modo_comprimir=0
+    @staticmethod
+    def _blink_error(error: threading.Event, end: threading.Event):
+        while not end.is_set():
+            if error.is_set():
+                GPIO.output(ErrorPin, GPIO.HIGH)
+                time.sleep(0.2)
+                GPIO.output(ErrorPin, GPIO.LOW)
+                time.sleep(0.2)
 
-        try:
-            archivoRES = open("resolucion.txt")
-            txt_i=archivoRES.readline().replace('\n', '')
+    def __enter__(self):
+        self.open()
+        return self
 
-            if(txt_i[0]=="y"): self.modo_offscreen=1
-            else:
-                txt_f=archivoRES.readline().replace('\n', '')
-                if(txt_f[0]=="y"): self.modo_fullscreen=1
-                else:
-                    self.modo_fullscreen=0
-                    self.windows_posx=int(archivoRES.readline())
-                    self.windows_posy=int(archivoRES.readline())
-                    self.resize=int(archivoRES.readline()) 
-            archivoRES.close()
-        except:
-            print("ERROR AL LEER RESOLUCION.txt")
-            self.modo_offscreen=0
-            self.modo_fullscreen=1
-
-        try:
-            archivo3=open("crop.txt")
-            self.crop_x=float(archivo3.readline().replace('\n', ''))
-            self.crop_y=float(archivo3.readline().replace('\n', ''))
-            self.crop_w=float(archivo3.readline().replace('\n', ''))
-            self.crop_h=float(archivo3.readline().replace('\n', ''))
-
-            
-            if(self.crop_x==0.0 and self.crop_y==0.0 and self.crop_h==1.0 and self.crop_w==1.0):
-                self.crop_bool=0
-            else:
-                self.crop_bool=1
-        except:
-            print("problema lectura crop")
-            self.crop_bool=0
-        try:
-            formato="%Y%m%d-%H%M%S"
-            fecha=datetime.now()
-            self.name=fecha.strftime(formato)
-        except:
-            print("ERROR AL ESTABLECER FECHA.txt")
-
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
 # DISPOSITIVOS USB
 
 def get_usb_devices():
-    sdb_devices = map(os.path.realpath, glob('/sys/block/sd*'))
-    usb_devices = (dev for dev in sdb_devices
-    if 'usb' in dev.split('/')[5])
+    sdb_devices = list(map(os.path.realpath, glob('/sys/block/sd*')))
+    usb_devices = [dev for dev in sdb_devices
+    	if any(('usb' in c) for c in dev.split('/'))]
     return dict((os.path.basename(dev), dev) for dev in usb_devices)
 
 # DIRECCION DEL USB
 
-def get_mount_points(devices=None):
+def get_mount_points(devices=None, blinker: Blinker = None):
     devices = devices or get_usb_devices() # if devices are None: get_usb_devices
     output = check_output(['mount']).splitlines()
     output = [tmp.decode('UTF-8') for tmp in output]
@@ -149,149 +99,129 @@ def get_mount_points(devices=None):
         return result.pop()
     else:
         print('CONECTE UN DISPOSITIVO USB PARA GRABAR!' )
-        blink_error()
+        blinker.error()
 
-def setup():
-    GPIO.setmode(GPIO.BOARD)            # Numbers GPIOs by physical location
-    GPIO.setup(ErrorPin, GPIO.OUT)      # Set pin mode as output
-    GPIO.output(ErrorPin, GPIO.LOW)    # Set pin low to turn on led
-    GPIO.setup(RecLed, GPIO.OUT)      # Set pin mode as output
-    GPIO.output(RecLed, GPIO.LOW)    # Set pin low to turn on led
+TFMT = "%H:%M:%S"
 
-def blink_error():
-    while True:
-        GPIO.output(ErrorPin, GPIO.HIGH)
-        time.sleep(0.3)
-        GPIO.output(ErrorPin, GPIO.LOW)
-        time.sleep(0.3)
+def hilo_convertir(videofile, blinker):
+    vfname = os.path.split(videofile)[-1]
+    print("(hilo_convertir)[{}] Comprimiendo en: {}".format(vfname, datetime.now().strftime(TFMT)))
+    completed_video= os.path.join(get_mount_points(None, blinker), videofile)
+    while not os.path.exists(completed_video):
+        sleep(1)
+        print("(hilo_convertir)[{}] Esperando que aparezca el .h264...".format(vfname))
+    print("(hilo_convertir)[{}] Ejectuando FFMPEG".format(vfname))
+    command = "ffmpeg -r 30 -i {} -vcodec copy {}.mp4; rm {}".format(completed_video, os.path.splitext(videofile)[0], completed_video)
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    except subprocess.CalledProcessError as e:
+        print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+    print("(hilo_convertir)[{}] Compresión finalizada en: {}".format(vfname, datetime.now().strftime(TFMT))) 
 
-def blink_rec():
-    GPIO.output(RecLed, GPIO.HIGH)
-    time.sleep(0.2)
-    GPIO.output(RecLed, GPIO.LOW)
-    time.sleep(0.2)
-
-def main():
-    setup()
+def main(blinker: Blinker):
     completed=0
-    t_preview=2
-    roiX=roiY=roiW=roiH=0.0
     #make destination direcory
-    dstDir = get_mount_points()  + '/'
+    dstDir = get_mount_points(None, blinker)  + '/'
     if not os.path.exists(dstDir):
         os.makedirs(dstDir)
 
+    configs = load_configs(DEFAULT_CONFIGS_PATH)
 
+    inicio = configs['tiempo']['fh_inicio']
+    cant_videos = configs['tiempo']['cantidad_videos']
+    _duracion = configs['tiempo']['duracion_videos']
+    duracion = dt.timedelta(hours=_duracion.hour, minutes=_duracion.minute, seconds=_duracion.second)
 
-    #CANTIDAD DE VIDEOS
-    archivo = open("tiempo.txt")
-    fecha_hoy=archivo.readline()
-    hora_hoy=archivo.readline()
-    buffer=archivo.readline()
-    hora_inicio=archivo.readline()
-    buffer=archivo.readline()
-    cant=int(float(archivo.readline()))
-    archivo.close()
-
-    #hora_inicio="12:24"
-    
-    start=dt.datetime.now()
-    
-    txt2 = hora_inicio.split(":")
-    inicio=dt.datetime.now()
-    inicio=inicio.replace(hour=int(txt2[0]), minute=int(txt2[1]))
-
-    sleep(3)
-    while(dt.datetime.now()<inicio):
+    print("Esperando que llegue la hora de inicio...")
+    while dt.datetime.now() < inicio:
         sleep(1)
-    
-    for _ in range(cant):
-        start=dt.datetime.now()
-        try:
-            newVideo=Video()
-            newVideo.cargar_default()
-            t_record=(newVideo.duracion_grabacion)*60
-            thisVideoFile=dstDir + newVideo.name + '.h264'
-            camera=PiCamera()
+    print("Comenzando...")
+    hilos_convertir = []
+    for _ in range(cant_videos):
+        try:            
+            res_x, res_y = (configs['grabacion']['res_x'], configs['grabacion']['res_y'])
             
+            camera = PiCamera()
+            camera.resolution = res_x, res_y
                 #camera.sensor_mode = 1 
                 #camera.framerate = 25
-            if(newVideo.crop_bool==1):
-                print("MODO CROP: "+str(newVideo.crop_x)+str(newVideo.crop_y)+str(newVideo.crop_w)+str(newVideo.crop_h))
-                regionOfInterest = (float(newVideo.crop_x),float(newVideo.crop_y),float(newVideo.crop_w),float(newVideo.crop_h))
-                (roiX, roiY, roiW, roiH) = regionOfInterest
-                #(roiX2, roiY2, roiW2, roiH2)= regionOfInterest
-                width  = int(newVideo.windows_x)*roiW                     #Desired width
-                height = int(newVideo.windows_y)*roiH                    #Desired height
-                        
-                percentAspectRatio = roiW/roiH                #Ratio in percent of size 
-                imageAspectRatio   = width/height             #Desired aspect ratio
-                sensorAspectRatio  = int(newVideo.windows_x)/int(newVideo.windows_y) #Physical sensor aspect ratio       
+            if(configs['crop']['on']): # No está chequeado, mejor no usar
+                crop_x = configs['crop']['x']
+                crop_y = configs['crop']['y']
+                crop_w = configs['crop']['w']
+                crop_h = configs['crop']['h']
+                print(f"MODO CROP: {crop_x}, {crop_y}, {crop_w}, {crop_h}")
 
-                        #The sensor is automatically cropped to fit current aspect ratio 
-                        #so we need to adjust zoom to take that into account
+                width  = res_x*crop_w
+                height = res_y*crop_h
+
+                percentAspectRatio = crop_w/crop_h  #Ratio in percent of size 
+                imageAspectRatio   = width/height   #Desired aspect ratio
+                sensorAspectRatio  = res_x/res_y    #Physical sensor aspect ratio
+
+                #The sensor is automatically cropped to fit current aspect ratio 
+                #so we need to adjust zoom to take that into account
                 #if (imageAspectRatio > sensorAspectRatio):    
-                #    roiY = (roiY - 0.5) * percentAspectRatio + 0.5  
-                #    roiH = roiW                                  
-                
+                #    crop_y = (crop_y - 0.5) * percentAspectRatio + 0.5  
+                #    crop_h = crop_w                                  
+
                 #if (imageAspectRatio < sensorAspectRatio):   
-                #    roiX = (roiX - 0.5) * percentAspectRatio + 0.5  
-                #    roiW = roiH 
-                
-                camera.resolution=(int(newVideo.windows_x),int(newVideo.windows_y))
-                        
-                camera.zoom=(roiX,roiY,roiW,roiH)
-                #camera.zoom=(roiX2/int(newVideo.windows_x),roiY2/int(newVideo.windows_y),roiW2/int(newVideo.windows_x),roiH2/int(newVideo.windows_y))
-                #print("CROP DE ZOOM:"+str(roiX/())+"XXX"+str(roiY)+"XXX"+str(roiW)+"XXX"+str(roiH)+"XXX")
-                if(Video.modo_offscreen==0):
+                #    crop_x = (crop_x - 0.5) * percentAspectRatio + 0.5  
+                #    crop_w = crop_h 
+
+                camera.zoom=(crop_x,crop_y,crop_w,crop_h)
+                #camera.zoom=(crop_x2/res_x,crop_y2/res_y,crop_w2/res_x,crop_h2/res_y)
+                #print("CROP DE ZOOM:"+str(crop_x/())+"XXX"+str(crop_y)+"XXX"+str(crop_w)+"XXX"+str(crop_h)+"XXX")
+
+            preview = configs['preview']
+            if preview['on']:
+                if configs['crop']['on']:
                     camera.start_preview()
-                camera.start_recording(thisVideoFile)
-            else:
-                if newVideo.modo_fullscreen==0:
-                    print("MODO NO-FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
-                    camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
-                    if(Video.modo_offscreen==0):
-                        camera.start_preview(fullscreen=False,window=(newVideo.windows_posx,newVideo.windows_posy,int(newVideo.windows_x/newVideo.resize),int(newVideo.windows_y/newVideo.resize)))
-                    camera.start_recording(thisVideoFile)
+                elif preview['fullscreen']:
+                    print(f"MODO FULL-SCREEN: {res_x}x{res_y}")
+                    camera.start_preview(fullscreen=True)
                 else:
-                    print("MODO FULL-SCREEN: "+str(newVideo.windows_x)+" "+str(newVideo.windows_y))
-                    camera.resolution = (int(newVideo.windows_x),int(newVideo.windows_y))
-                    if(Video.modo_offscreen==0):
-                        camera.start_preview(fullscreen=True)
-                    camera.start_recording(thisVideoFile)
-            while (dt.datetime.now() - start).seconds < t_record: 
-                    camera.wait_recording(.5)
-                    blink_rec()
+                    print(f"MODO NO-FULL-SCREEN: {res_x}x{res_y}")
+                    pos_x, pos_y = preview['pos_x'], preview['pos_y']
+                    scale = preview['scale']
+                    camera.start_preview(fullscreen=False, window=(pos_x, pos_y, res_x//scale, res_y//scale))
+
+            start = dt.datetime.now()
+            name = start.strftime("%Y-%m-%dT%H_%M_%S")
+            print("El nombre del archivo va a ser: ", name)
+            thisVideoFile = dstDir + name + '.h264'
+
+            blinker.start_rec()
+            print("Se empieza a grabar en: ", datetime.now().strftime(TFMT))
+            camera.start_recording(thisVideoFile)
+            while (dt.datetime.now() - start) < duracion:
+                camera.wait_recording(.5)
             camera.stop_recording()
+            camera.stop_preview()
+            blinker.stop_rec()
+            print("Se terminó de grabar en: ", datetime.now().strftime(TFMT))
+
             camera.close()
-            completed=1
-                            
+
         except KeyboardInterrupt:
             print("terminando antes")
-            if(Video.modo_offscreen==0):
-                camera.stop_preview()
             camera.stop_recording()
+            camera.stop_preview()
+            blinker.stop_rec()
+            print("Se terminó de grabar en: ", datetime.now().strftime(TFMT))
             camera.close()
-            completed=1
             print("Camera stop recording")
             break
 
-        if(completed==1):
-            #print("GRABAR EN: "+get_mount_points())           
-            completed_video= os.path.join(get_mount_points(), thisVideoFile)
+        if configs['grabacion']['convert_mp4']:
+            hilo = threading.Thread(target=hilo_convertir, args=(thisVideoFile, blinker))
+            hilos_convertir.append(hilo)
+            hilo.start()
 
-            if(newVideo.modo_comprimir==1):
-                #print("Beginning Convertion")
-                command = "MP4Box -add {} {}.mp4; rm {}".format(completed_video, os.path.splitext(thisVideoFile)[0],completed_video)
-                try:
-                    output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-                except subprocess.CalledProcessError as e:
-                    print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
-    GPIO.cleanup()
+    for hilo in hilos_convertir:
+        hilo.join()
+    print("Grabación finalizada.")
 
 if __name__ == "__main__":
-    main()
-
-
-
-            
+    with Blinker() as blinker:
+        main(blinker)
